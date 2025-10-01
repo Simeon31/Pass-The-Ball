@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import CreatePost from '@/components/app/CreatePost.vue';
+import FollowingList from '@/components/app/FollowingList.vue';
 import GroupItem from '@/components/app/GroupItem.vue';
 import GroupList from '@/components/app/GroupList.vue';
 import { Head, Link } from '@inertiajs/vue3';
@@ -17,10 +19,12 @@ import { Head, Link } from '@inertiajs/vue3';
             <GroupList />
         </div>
         <div class="col-span-6">
-            Posts
+            <CreatePost />
+
+            <PostList />
         </div>
-        <div class="col-span-3">
-            Followers
+        <div class="col-span-3 py-6 px-3">
+            <FollowingList />
         </div>
     </div>
 </template>
