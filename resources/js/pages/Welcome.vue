@@ -3,6 +3,7 @@ import CreatePost from '@/components/app/CreatePost.vue';
 import FollowingList from '@/components/app/FollowingList.vue';
 import GroupItem from '@/components/app/GroupItem.vue';
 import GroupList from '@/components/app/GroupList.vue';
+import PostList from '@/components/app/PostList.vue';
 import { Head, Link } from '@inertiajs/vue3';
 
 </script>

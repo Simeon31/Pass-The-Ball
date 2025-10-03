@@ -18,12 +18,10 @@ const postCreation = ref(false);
                 <Button type="button" class="relative">
                     Attach files
                 </Button>
-                <!-- only the Attach files button has the native file input overlay -->
                 <input type="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" multiple
                     accept="image/*,video/*" />
             </div>
 
-            <!-- Post is a normal button (no file input overlay) -->
             <div>
                 <Button type="button" class="relative z-0">
                     Post

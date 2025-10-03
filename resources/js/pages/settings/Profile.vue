@@ -53,8 +53,8 @@ const user = page.props.auth.user;
 
                     <div class="grid gap-2">
                         <Label for="username">Username</Label>
-                        <Input id="username" class="mt-1 block w-full" name="username" :default-value="user.username" required
-                            autocomplete="name" placeholder="Username" />
+                        <Input id="username" class="mt-1 block w-full" name="username" :default-value="user.username"
+                            required autocomplete="username" placeholder="Username" />
                         <InputError class="mt-2" :message="errors.username" />
                     </div>
 
