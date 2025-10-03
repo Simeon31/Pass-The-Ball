@@ -15,17 +15,20 @@ import { Head, Link } from '@inertiajs/vue3';
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     </Head>
 
-    <div class="grid grid-cols-12 gap-3">
-        <div class="col-span-3 py-6 px-3">
-            <GroupList />
+    <div class="grid lg:grid-cols-12 gap-3 p-4 h-screen">
+        <div class="lg:col-span-3 lg:order-first h-full overflow-y-auto">
+            <div class="h-[400px] overflow-y-auto">
+                <GroupList />
+            </div>
         </div>
-        <div class="col-span-6">
+        <div class="lg:col-span-3 lg:order-last h-full overflow-y-auto">
+            <div class="h-[400px] overflow-y-auto">
+                <FollowingList />
+            </div>
+        </div>
+        <div class="lg:col-span-6 h-full overflow-y-auto flex flex-col">
             <CreatePost />
-
-            <PostList />
-        </div>
-        <div class="col-span-3 py-6 px-3">
-            <FollowingList />
+            <PostList class="flex-1" />
         </div>
     </div>
 </template>

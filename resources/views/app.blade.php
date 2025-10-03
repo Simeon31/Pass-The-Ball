@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])
+    class="h-full">
 
 <head>
     <meta charset="utf-8">
@@ -44,7 +45,7 @@
     @inertiaHead
 </head>
 
-<body class="font-sans antialiased bg-gray-100">
+<body class="font-sans antialiased  overflow-hidden h-full">
     @inertia
 </body>
 

@@ -8,8 +8,9 @@ const postCreation = ref(false);
 </script>
 
 <template>
-    <div class="py-6">
-        <div @click="postCreation = true" class="py-3 px-2 text-gray-500 border rounded-lg border-indigo-900 mb-4">
+    <div class="p-4 bg-white rounded-lg border mb-3">
+        <div @click="postCreation = true"
+            class="py-3 px-2 text-gray-400 border border-2 rounded-lg border-indigo-900 mb-4">
             Click here to create a new post
         </div>
 
