@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
+use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,14 @@ class ProfileController extends Controller
     /**
      * Show the user's profile settings page.
      */
+
+    public function index(User $user)
+    {
+        return Inertia::render('settings/Profile', [
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
+            'status' => session('status'),
+        ]);
+    }
     public function edit(Request $request): Response
     {
         return Inertia::render('settings/Profile', [

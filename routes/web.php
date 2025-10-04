@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
