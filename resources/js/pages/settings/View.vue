@@ -189,7 +189,7 @@ import TabItem from './Partials/TabItem.vue';
 import Profile from './Profile.vue';
 import Button from '@/components/ui/button/Button.vue';
 import { useForm } from "@inertiajs/vue3";
-import { updateCover } from '@/routes/profile';
+import { updateImage } from '@/routes/profile';
 import Input from '@/components/ui/input/Input.vue';
 
 const imagesForm = useForm({
@@ -257,7 +257,7 @@ const coverSrc = computed(() => {
         return user.value.cover_url.startsWith('/') ? user.value.cover_url : `/${user.value.cover_url}`;
     }
 
-    // Fallback to the public default image (lowercase `images` folder)
+    // Fallback to the public default image if no cover image is set
     return '/images/default-cover-image.jpg';
 });
 
@@ -303,7 +303,7 @@ function onCoverChange(event) {
     // If validation passes, proceed with the upload
     imagesForm.cover = file;
 
-    // handling preview here
+    // handling preview 
     const reader = new FileReader();
     reader.onload = (e) => {
         coverImageSrc.value = e.target && e.target.result;
@@ -319,7 +319,7 @@ function cancelCoverImage() {
 
 function submitCoverImage() {
     if (imagesForm.cover) {
-        imagesForm.post(updateCover.url(), {
+        imagesForm.post(updateImage.url(), {
             preserveScroll: true,
             onSuccess: () => {
                 imagesForm.reset('cover');
@@ -357,7 +357,7 @@ function onAvatarChange(event) {
     // If validation passes, proceed with the upload
     imagesForm.avatar = file;
 
-    // handling preview here
+    // handling preview 
     const reader = new FileReader();
     reader.onload = (e) => {
         avatarImageSrc.value = e.target && e.target.result;
@@ -373,13 +373,13 @@ function cancelAvatarImage() {
 
 function submitAvatarImage() {
     if (imagesForm.avatar) {
-        imagesForm.post(updateCover.url(), {
+        imagesForm.post(updateImage.url(), {
             preserveScroll: true,
             onSuccess: () => {
                 imagesForm.reset('avatar');
                 avatarImageSrc.value = null;
             },
         });
-    }
+    }   
 }
 </script>
