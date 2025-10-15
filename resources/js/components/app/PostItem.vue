@@ -1,27 +1,12 @@
 <script setup lang="ts">
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
+import type { Post, PostAttachment } from '@/types';
 
-interface User {
-   name: string;
-   avatar: string;
-}
-
-interface Group {
-   name: string;
-}
-
-interface Post {
-   body: string;
-   user: User;
-   created_at: Date | string;
-   group: Group;
-   attachments: any[];
-}
 const props = defineProps<{
    post: Post
 }>();
 
-function isImage(attachment: any) {
+function isImage(attachment: PostAttachment) {
    const mime = attachment.mime.split('/');
    return mime[0] === 'image';
 }
@@ -31,8 +16,8 @@ function isImage(attachment: any) {
    <div class="bg-white border rounded p-3 shadow mb-6 ">
       <div class="flex items-center gap-4 mb-4">
          <a href="javascript:void(0)">
-            <img :src="post.user.avatar" alt="User avatar" class="w-12 h-12 rounded-full object-cover
-            border border-2 hover-ring-blue-400" />
+            <img :src="post.user.profile_picture_url || 'https://avatar.iran.liara.run/public/'" alt="User avatar"
+               class="w-12 h-12 rounded-full object-cover border border-2 hover-ring-blue-400" />
          </a>
          <div class="flex flex-col">
             <a href="javascript:void(0)" class="hover:underline">
@@ -44,18 +29,16 @@ function isImage(attachment: any) {
             <span class="text-xs text-gray-400 mt-1">{{ post.created_at }}</span>
          </div>
       </div>
-      <div class="mb-4">
+      <div v-if="post.body" class="mb-4">
          <Disclosure v-slot="{ open }">
             <div v-if="!open" v-html="post.body.substring(0, 200)" />
-            <DisclosurePanel>
+            <DisclosurePanel v-else>
                <div v-html="post.body" />
             </DisclosurePanel>
-            <div class="flex justify-end">
-               <DisclosureButton class="text-indigo-600 mt-2 hover:underline cursor-pointer">
-                  {{ open ? 'Show Less' : 'Show More' }}
-               </DisclosureButton>
-            </div>
 
+            <DisclosureButton v-if="post.body.length > 200" class="text-indigo-600 mt-2 hover:underline cursor-pointer">
+               {{ open ? 'Show Less' : 'Show More' }}
+            </DisclosureButton>
          </Disclosure>
       </div>
       <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-3">

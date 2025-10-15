@@ -31,10 +31,33 @@ export interface User {
     name: string;
     username: string;
     email: string;
-    avatar?: string;
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
+    cover_url?: string | null;
+    profile_picture_url?: string | null;
+}
+
+export interface Group {
+    id: number;
+    name: string;
+}
+
+export interface PostAttachment {
+    id: number;
+    name: string;
+    mime: string;
+    url: string;
+}
+
+export interface Post {
+    id: number;
+    body: string | null;
+    user: User;
+    created_at: string;
+    updated_at: string;
+    group?: Group;
+    attachments: PostAttachment[];
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;

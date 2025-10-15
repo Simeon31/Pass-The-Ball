@@ -7,14 +7,14 @@
                 enter-to-class="opacity-100 transform translate-y-0"
                 leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
                 leave-to-class="opacity-0">
-                <div v-if="$page.props.flash.status && showStatus"
+                <div v-if="statusMessage() && showStatus"
                     class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center">
                             <CheckCircleIcon class="w-5 h-5 text-green-600 mr-2" />
-                            <p class="text-sm font-medium text-green-800">{{ $page.props.flash.status }}</p>
+                            <p class="text-sm font-medium text-green-800">{{ statusMessage() }}</p>
                         </div>
-                        <button @click="showStatus = false" class="text-green-600 hover:text-green-800">
+                        <button @click="dismissStatus" class="text-green-600 hover:text-green-800">
                             <XMarkIcon class="w-5 h-5" />
                         </button>
                     </div>
@@ -191,6 +191,7 @@ import Button from '@/components/ui/button/Button.vue';
 import { useForm } from "@inertiajs/vue3";
 import { updateImage } from '@/routes/profile';
 import Input from '@/components/ui/input/Input.vue';
+import { useFlashMessage } from '@/composables/useFlashMessage';
 
 const imagesForm = useForm({
     avatar: null,
@@ -208,24 +209,10 @@ const props = defineProps({
     },
 })
 
-// Auto-hide status message after 5 seconds
-const showStatus = ref(false);
+// Use flash message composable for status messages
+const { showMessage: showStatus, message: statusMessage, dismiss: dismissStatus } = useFlashMessage('status', 5000);
+
 const validationError = ref(null);
-let statusTimeout = null;
-
-// Watch for flash messages
-watch(() => usePage().props.flash.status, (newStatus) => {
-    if (statusTimeout) {
-        clearTimeout(statusTimeout);
-    }
-
-    if (newStatus) {
-        showStatus.value = true;
-        statusTimeout = setTimeout(() => {
-            showStatus.value = false;
-        }, 5000);
-    }
-}, { immediate: true });
 
 // Compute error message
 const errorMessage = computed(() => {
@@ -380,6 +367,6 @@ function submitAvatarImage() {
                 avatarImageSrc.value = null;
             },
         });
-    }   
+    }
 }
 </script>
