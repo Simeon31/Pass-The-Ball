@@ -1,15 +1,38 @@
 <script setup lang="ts">
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
+import { usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 import type { Post, PostAttachment } from '@/types';
+import PostMenu from './PostMenu.vue';
+import EditPostModal from './EditPostModal.vue';
+import DeletePostDialog from './DeletePostDialog.vue';
 
 const props = defineProps<{
    post: Post
 }>();
 
+const page = usePage();
+const authUser = computed(() => page.props.auth.user);
+
+// Check if the current user owns this post
+const canManagePost = computed(() => authUser.value.id === props.post.user.id);
+
+// Modal states
+const isEditModalOpen = ref(false);
+const isDeleteDialogOpen = ref(false);
+
 function isImage(attachment: PostAttachment) {
    const mime = attachment.mime.split('/');
    return mime[0] === 'image';
 }
+
+const openEditModal = () => {
+   isEditModalOpen.value = true;
+};
+
+const openDeleteDialog = () => {
+   isDeleteDialogOpen.value = true;
+};
 </script>
 
 <template>
@@ -19,7 +42,7 @@ function isImage(attachment: PostAttachment) {
             <img :src="post.user.profile_picture_url || 'https://avatar.iran.liara.run/public/'" alt="User avatar"
                class="w-12 h-12 rounded-full object-cover border border-2 hover-ring-blue-400" />
          </a>
-         <div class="flex flex-col">
+         <div class="flex flex-col flex-1">
             <a href="javascript:void(0)" class="hover:underline">
                <span class="font-bold text-gray-900 text-base leading-tight">{{ post.user.name }}</span>
 
@@ -28,6 +51,9 @@ function isImage(attachment: PostAttachment) {
             </template>
             <span class="text-xs text-gray-400 mt-1">{{ post.created_at }}</span>
          </div>
+
+         <!-- Post Menu (only shown to post owner) -->
+         <PostMenu v-if="canManagePost" :post="post" @edit="openEditModal" @delete="openDeleteDialog" />
       </div>
       <div v-if="post.body" class="mb-4">
          <Disclosure v-slot="{ open }">
@@ -80,5 +106,11 @@ function isImage(attachment: PostAttachment) {
             Comment
          </button>
       </div>
+
+      <!-- Edit Post Modal -->
+      <EditPostModal :post="post" :is-open="isEditModalOpen" @update:is-open="isEditModalOpen = $event" />
+
+      <!-- Delete Confirmation Dialog -->
+      <DeletePostDialog :post="post" :is-open="isDeleteDialogOpen" @update:is-open="isDeleteDialogOpen = $event" />
    </div>
 </template>

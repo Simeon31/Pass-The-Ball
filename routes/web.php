@@ -16,5 +16,11 @@ Route::get('dashboard', function () {
 Route::post('/post', [PostController::class, 'store'])
     ->middleware(['auth', 'verified'])->name('post.create');
 
+Route::put('/post/{post}', [PostController::class, 'update'])
+    ->middleware(['auth', 'verified'])->name('post.update');
+
+Route::delete('/post/{post}', [PostController::class, 'destroy'])
+    ->middleware(['auth', 'verified'])->name('post.destroy');
+
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

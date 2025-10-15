@@ -26,7 +26,10 @@ class PostController extends Controller
      */
     public function update(UpdatePostRequest $request, Post $post)
     {
-        //
+        $data = $request->validated();
+        $post->update($data);
+
+        return back()->with('status', 'Post updated successfully.');
     }
 
     /**
@@ -34,6 +37,13 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
-        //
+        // Authorization check
+        if (auth()->id() !== $post->user_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $post->delete();
+
+        return back()->with('status', 'Post deleted successfully.');
     }
 }
