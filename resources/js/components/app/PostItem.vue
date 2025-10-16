@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import type { Post, PostAttachment } from '@/types';
+import type { Comment, Post, PostAttachment, ReactionType } from '@/types';
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue';
 import { usePage } from '@inertiajs/vue3';
-import { computed, ref, onMounted, nextTick } from 'vue';
+import axios from 'axios';
+import { computed, ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { usePostBroadcasting } from '@/composables/usePostBroadcasting';
 import AttachmentFullScreen from './AttachmentFullScreen.vue';
 import AttachmentPreview from './AttachmentPreview.vue';
+import CommentSection from './CommentSection.vue';
 import DeletePostDialog from './DeletePostDialog.vue';
 import EditPostModal from './EditPostModal.vue';
 import PostMenu from './PostMenu.vue';
+import ReactionPicker from './ReactionPicker.vue';
 
 const props = defineProps<{
     post: Post;
@@ -27,9 +31,20 @@ const isDeleteDialogOpen = ref(false);
 const isAttachmentViewerOpen = ref(false);
 const currentAttachmentIndex = ref(0);
 
+// Comments section state
+const showComments = ref(false);
+const commentSectionRef = ref<InstanceType<typeof CommentSection> | null>(null);
+
+// Reactions state
+const localReactions = ref(props.post.reactions);
+const totalComments = ref(props.post.comments.total);
+
 // Refs for post content containers
 const postContentRef = ref<HTMLDivElement | null>(null);
 const postContentFullRef = ref<HTMLDivElement | null>(null);
+
+// Broadcasting setup
+const { listenForReactions, listenForComments, disconnect } = usePostBroadcasting(props.post.id);
 
 function isImage(attachment: PostAttachment) {
     const mime = attachment.mime_type.split('/');
@@ -48,6 +63,36 @@ function openAttachmentViewer(attachment: PostAttachment, index: number) {
     currentAttachmentIndex.value = index;
     isAttachmentViewerOpen.value = true;
 }
+
+const toggleComments = () => {
+    showComments.value = !showComments.value;
+};
+
+// Handle reaction toggle
+const handleReaction = async (type: ReactionType) => {
+    try {
+        const response = await axios.post(`/post/${props.post.id}/reaction`, {
+            type,
+        });
+
+        // Update local reactions state
+        localReactions.value = response.data.reactions;
+    } catch (error) {
+        console.error('Error toggling reaction:', error);
+        alert('Failed to react to post. Please try again.');
+    }
+};
+
+// Handle new comment added locally by current user
+const handleCommentAdded = (comment: Comment) => {
+    // Increment the total since a new comment was added
+    totalComments.value++;
+};
+
+// Handle comment deleted
+const handleCommentDeleted = (commentId: number) => {
+    totalComments.value--;
+};
 
 // Function to make links in HTML content clickable
 const makeLinksClickable = (element: HTMLElement | null) => {
@@ -79,6 +124,39 @@ onMounted(() => {
         makeLinksClickable(postContentRef.value);
         makeLinksClickable(postContentFullRef.value);
     });
+
+    // Setup WebSocket listeners for real-time updates
+    listenForReactions((reactions) => {
+        localReactions.value = reactions;
+    });
+
+    listenForComments((comment) => {
+        addCommentFromBroadcast(comment);
+    });
+});
+
+onUnmounted(() => {
+    disconnect();
+});
+
+// Expose method for WebSocket updates
+const updateReactionsFromBroadcast = (reactions: typeof localReactions.value) => {
+    localReactions.value = reactions;
+};
+
+const addCommentFromBroadcast = (comment: Comment) => {
+    if (commentSectionRef.value) {
+        // Only increment counter if the comment was actually added (not a duplicate)
+        const wasAdded = commentSectionRef.value.addCommentFromBroadcast(comment);
+        if (wasAdded) {
+            totalComments.value++;
+        }
+    }
+};
+
+defineExpose({
+    updateReactionsFromBroadcast,
+    addCommentFromBroadcast,
 });
 </script>
 
@@ -125,27 +203,39 @@ onMounted(() => {
             <AttachmentPreview :attachments="post.attachments" @click="openAttachmentViewer" />
         </div>
 
+        <!-- Reactions Summary -->
+        <div v-if="localReactions.total > 0" class="mb-2 flex items-center gap-2 text-sm text-gray-600">
+            <div class="flex items-center gap-1">
+                <span v-if="localReactions.summary.like" class="text-base">👍</span>
+                <span v-if="localReactions.summary.love" class="text-base">❤️</span>
+                <span v-if="localReactions.summary.haha" class="text-base">😂</span>
+                <span v-if="localReactions.summary.wow" class="text-base">😮</span>
+                <span v-if="localReactions.summary.sad" class="text-base">😢</span>
+                <span v-if="localReactions.summary.angry" class="text-base">😠</span>
+            </div>
+            <span class="font-semibold">{{ localReactions.total }}</span>
+            <span v-if="totalComments > 0" class="ml-auto">{{ totalComments }} {{ totalComments === 1 ? 'comment' :
+                'comments' }}</span>
+        </div>
+
         <div class="flex gap-2">
-            <button
-                class="flex flex-1 cursor-pointer items-center justify-center gap-1 rounded-lg bg-gray-100 px-4 py-2 text-gray-800 hover:bg-gray-200">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M6.633 10.25c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 0 1 2.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 0 0 .322-1.672V2.75a.75.75 0 0 1 .75-.75 2.25 2.25 0 0 1 2.25 2.25c0 1.152-.26 2.243-.723 3.218-.266.558.107 1.282.725 1.282m0 0h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 0 1-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 0 0-1.423-.23H5.904m10.598-9.75H14.25M5.904 18.5c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 0 1-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 9.953 4.167 9.5 5 9.5h1.053c.472 0 .745.556.5.96a8.958 8.958 0 0 0-1.302 4.665c0 1.194.232 2.333.654 3.375Z" />
-                </svg>
-                Like
-            </button>
-            <button
-                class="flex flex-1 cursor-pointer items-center justify-center gap-1 rounded-lg bg-gray-100 px-4 py-2 text-gray-800 hover:bg-gray-200">
+            <ReactionPicker :current-reaction="localReactions.current_user_reaction"
+                :total-reactions="localReactions.total" @react="handleReaction" />
+            <button @click="toggleComments"
+                class="flex flex-1 cursor-pointer items-center justify-center gap-1 rounded-lg bg-gray-100 px-4 py-2 text-gray-800 transition-all hover:bg-gray-200">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="size-6">
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z" />
                 </svg>
-
                 Comment
             </button>
         </div>
+
+        <!-- Comments Section -->
+        <CommentSection v-if="showComments" ref="commentSectionRef" :post-id="post.id" :comments="post.comments.data"
+            :total-comments="totalComments" @comment-added="handleCommentAdded"
+            @comment-deleted="handleCommentDeleted" />
 
         <!-- Edit Post Modal -->
         <EditPostModal :post="post" :is-open="isEditModalOpen" @update:is-open="isEditModalOpen = $event" />

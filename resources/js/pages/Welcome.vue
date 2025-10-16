@@ -5,10 +5,11 @@ import GroupList from '@/components/app/GroupList.vue';
 import PostList from '@/components/app/PostList.vue';
 import { useFlashMessage } from '@/composables/useFlashMessage';
 import AppLayout from '@/layouts/AppLayout.vue';
+import type { Post } from '@/types';
 import { CheckCircleIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { Head } from '@inertiajs/vue3';
 
-defineProps<{ posts: object }>();
+defineProps<{ posts: { data: Post[] } }>();
 
 // Using flash message composable
 const {
@@ -20,6 +21,7 @@ const {
 
 <template>
     <AppLayout>
+
         <Head title="Pass the Ball">
             <link rel="preconnect" href="https://rsms.me/" />
             <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
@@ -38,31 +40,21 @@ const {
             </div>
             <div class="flex h-full flex-col overflow-y-auto lg:col-span-6">
                 <!-- Success Message -->
-                <Transition
-                    enter-active-class="transition ease-out duration-300"
+                <Transition enter-active-class="transition ease-out duration-300"
                     enter-from-class="opacity-0 transform translate-y-2"
                     enter-to-class="opacity-100 transform translate-y-0"
-                    leave-active-class="transition ease-in duration-200"
-                    leave-from-class="opacity-100"
-                    leave-to-class="opacity-0"
-                >
-                    <div
-                        v-if="statusMessage() && showSuccess"
-                        class="mb-4 rounded-lg border border-green-200 bg-green-50 p-4"
-                    >
+                    leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
+                    leave-to-class="opacity-0">
+                    <div v-if="statusMessage() && showSuccess"
+                        class="mb-4 rounded-lg border border-green-200 bg-green-50 p-4">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
-                                <CheckCircleIcon
-                                    class="mr-2 h-5 w-5 text-green-600"
-                                />
+                                <CheckCircleIcon class="mr-2 h-5 w-5 text-green-600" />
                                 <p class="text-sm font-medium text-green-800">
                                     {{ statusMessage() }}
                                 </p>
                             </div>
-                            <button
-                                @click="dismissSuccess"
-                                class="text-green-600 hover:text-green-800"
-                            >
+                            <button @click="dismissSuccess" class="text-green-600 hover:text-green-800">
                                 <XMarkIcon class="h-5 w-5" />
                             </button>
                         </div>

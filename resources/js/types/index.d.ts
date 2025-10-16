@@ -52,6 +52,32 @@ export interface PostAttachment {
     created_at: string;
 }
 
+export type ReactionType = 'like' | 'love' | 'haha' | 'wow' | 'sad' | 'angry';
+
+export interface ReactionSummary {
+    [key: string]: number;
+}
+
+export interface PostReactions {
+    summary: ReactionSummary;
+    total: number;
+    current_user_reaction: ReactionType | null;
+}
+
+export interface Comment {
+    id: number;
+    post_id: number;
+    comment: string;
+    user: User;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface PostComments {
+    data: Comment[];
+    total: number;
+}
+
 export interface Post {
     id: number;
     body: string | null;
@@ -60,6 +86,8 @@ export interface Post {
     updated_at: string;
     group?: Group;
     attachments: PostAttachment[];
+    reactions: PostReactions;
+    comments: PostComments;
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;

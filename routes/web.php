@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\PostReactionController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
@@ -24,6 +26,20 @@ Route::delete('/post/{post}', [PostController::class, 'destroy'])
 
 Route::get('/post/attachment/{attachment}/download', [PostController::class, 'downloadAttachment'])
     ->middleware(['auth', 'verified'])->name('post.attachment.download');
+
+// Post Reactions
+Route::post('/post/{post}/reaction', [PostReactionController::class, 'toggle'])
+    ->middleware(['auth', 'verified'])->name('post.reaction.toggle');
+
+// Comments
+Route::post('/post/{post}/comment', [CommentController::class, 'store'])
+    ->middleware(['auth', 'verified'])->name('post.comment.store');
+
+Route::get('/post/{post}/comments', [CommentController::class, 'index'])
+    ->middleware(['auth', 'verified'])->name('post.comment.index');
+
+Route::delete('/comment/{comment}', [CommentController::class, 'destroy'])
+    ->middleware(['auth', 'verified'])->name('comment.destroy');
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
