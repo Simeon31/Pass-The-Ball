@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Mews\Purifier\Facades\Purifier;
 
 class StorePostRequest extends FormRequest
 {
@@ -29,8 +30,16 @@ class StorePostRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $this->merge([
-            'user_id' => auth()->id()
-        ]);
+        // Sanitize HTML content before validation
+        if ($this->has('body') && !empty($this->body)) {
+            $this->merge([
+                'body' => Purifier::clean($this->body, 'post_content'),
+                'user_id' => auth()->id()
+            ]);
+        } else {
+            $this->merge([
+                'user_id' => auth()->id()
+            ]);
+        }
     }
 }

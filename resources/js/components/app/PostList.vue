@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import PostItem from './PostItem.vue';
 import type { Post } from '@/types';
+import PostItem from './PostItem.vue';
 
 defineProps<{ posts: Post[] }>();
-
 </script>
 
 <template>

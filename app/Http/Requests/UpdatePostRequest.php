@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Mews\Purifier\Facades\Purifier;
 
 class UpdatePostRequest extends FormRequest
 {
@@ -25,5 +26,15 @@ class UpdatePostRequest extends FormRequest
         return [
             'body' => ['nullable', 'string'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        // Sanitize HTML content before validation
+        if ($this->has('body') && !empty($this->body)) {
+            $this->merge([
+                'body' => Purifier::clean($this->body, 'post_content'),
+            ]);
+        }
     }
 }

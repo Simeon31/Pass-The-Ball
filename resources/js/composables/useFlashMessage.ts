@@ -1,14 +1,17 @@
-import { ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
 
 /**
  * Composable for handling flash messages with auto-hide functionality
- * 
+ *
  * @param flashKey - The key to watch in the flash object (e.g., 'status', 'error')
  * @param autoHideDuration - Duration in milliseconds before auto-hiding (default: 5000)
  * @returns Object containing visibility state and manual dismiss function
  */
-export function useFlashMessage(flashKey: string = 'status', autoHideDuration: number = 5000) {
+export function useFlashMessage(
+    flashKey: string = 'status',
+    autoHideDuration: number = 5000,
+) {
     const showMessage = ref(false);
     let messageTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -34,7 +37,7 @@ export function useFlashMessage(flashKey: string = 'status', autoHideDuration: n
                 showMessage.value = false;
             }
         },
-        { immediate: true }
+        { immediate: true },
     );
 
     /**

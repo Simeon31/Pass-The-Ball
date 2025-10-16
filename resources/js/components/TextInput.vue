@@ -6,7 +6,7 @@ const props = defineProps({
     placeholder: { type: String, default: '' },
     size: { type: String as () => 'sm' | 'md' | 'lg', default: 'md' },
     clearable: { type: Boolean, default: false },
-    className: { type: String, default: '' }
+    className: { type: String, default: '' },
 });
 
 const emit = defineEmits(['update:modelValue', 'enter']);
@@ -26,17 +26,36 @@ function clear() {
 
 const inputClass = computed(() => {
     const base = 'text-input';
-    const sizeClass = props.size === 'sm' ? 'text-input--sm' : props.size === 'lg' ? 'text-input--lg' : 'text-input--md';
+    const sizeClass =
+        props.size === 'sm'
+            ? 'text-input--sm'
+            : props.size === 'lg'
+              ? 'text-input--lg'
+              : 'text-input--md';
     return `${base} ${sizeClass} ${props.className}`.trim();
 });
 </script>
 
 <template>
     <div class="text-input-wrapper">
-        <input :value="modelValue" :placeholder="placeholder" :class="inputClass" @input="onInput"
-            @keyup.enter="onEnter" type="text" autocomplete="off" />
-        <button v-if="clearable && modelValue" type="button" class="text-input__clear" @click="clear"
-            aria-label="Clear">✕</button>
+        <input
+            :value="modelValue"
+            :placeholder="placeholder"
+            :class="inputClass"
+            @input="onInput"
+            @keyup.enter="onEnter"
+            type="text"
+            autocomplete="off"
+        />
+        <button
+            v-if="clearable && modelValue"
+            type="button"
+            class="text-input__clear"
+            @click="clear"
+            aria-label="Clear"
+        >
+            ✕
+        </button>
     </div>
 </template>
 

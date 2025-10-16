@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import Button from '@/components/ui/button/Button.vue';
-import { nextTick, onMounted, ref, watch } from 'vue';
-import { useForm } from '@inertiajs/vue3';
 import { create as createPost } from '@/routes/post';
+import { useForm } from '@inertiajs/vue3';
+import { nextTick, onMounted, ref, watch } from 'vue';
 
 const postCreation = ref(false);
 const newPostForm = useForm({
@@ -33,7 +33,11 @@ function useAutoResizingTextarea(initialValue = '') {
     return { value, textareaRef, resize };
 }
 
-const { value: postBody, textareaRef, resize: resizeTextarea } = useAutoResizingTextarea();
+const {
+    value: postBody,
+    textareaRef,
+    resize: resizeTextarea,
+} = useAutoResizingTextarea();
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
 // Syncning postBody with the form body
@@ -70,27 +74,39 @@ const resetComposer = () => {
 function submit() {
     newPostForm.post(createPost.url(), {
         onSuccess: () => {
-            newPostForm.reset()
-            resetComposer()
-        }
+            newPostForm.reset();
+            resetComposer();
+        },
     });
 }
-
 </script>
 
 <template>
-    <div class="p-4 bg-white rounded-lg border mb-3">
-        <textarea ref="textareaRef" v-model="postBody" @focus="activatePostCreation" @click="activatePostCreation"
+    <div class="mb-3 rounded-lg border bg-white p-4">
+        <textarea
+            ref="textareaRef"
+            v-model="postBody"
+            @focus="activatePostCreation"
+            @click="activatePostCreation"
             @input="resizeTextarea"
-            class="selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input w-full min-w-0 rounded-md border bg-transparent px-3 py-2 text-base text-gray-700 shadow-xs transition-[color,box-shadow] outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive overflow-hidden mb-3"
-            rows="1" placeholder="Click here to create a new post"></textarea>
-        <div v-if="postCreation" class="flex justify-between items-center w-full gap-4">
-            <div class="relative file-wrapper">
+            class="mb-3 w-full min-w-0 overflow-hidden rounded-md border border-input bg-transparent px-3 py-2 text-base text-gray-700 shadow-xs transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:aria-invalid:ring-destructive/40"
+            rows="1"
+            placeholder="Click here to create a new post"
+        ></textarea>
+        <div
+            v-if="postCreation"
+            class="flex w-full items-center justify-between gap-4"
+        >
+            <div class="file-wrapper relative">
                 <Button type="button" class="relative">
                     Attach files
-                    <input ref="fileInputRef" type="file"
-                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" multiple
-                        accept="image/*,video/*" />
+                    <input
+                        ref="fileInputRef"
+                        type="file"
+                        class="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+                        multiple
+                        accept="image/*,video/*"
+                    />
                 </Button>
             </div>
 
@@ -105,7 +121,10 @@ function submit() {
 
 <style scoped>
 .file-wrapper button {
-    transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease;
+    transition:
+        transform 120ms ease,
+        filter 120ms ease,
+        box-shadow 120ms ease;
 }
 
 .file-wrapper:hover button,

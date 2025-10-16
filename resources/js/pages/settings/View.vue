@@ -2,122 +2,213 @@
     <AppLayout>
         <div class="container mx-auto h-full overflow-auto">
             <!-- Success Message -->
-            <Transition enter-active-class="transition ease-out duration-300"
+            <Transition
+                enter-active-class="transition ease-out duration-300"
                 enter-from-class="opacity-0 transform translate-y-2"
                 enter-to-class="opacity-100 transform translate-y-0"
-                leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
-                leave-to-class="opacity-0">
-                <div v-if="statusMessage() && showStatus"
-                    class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                leave-active-class="transition ease-in duration-200"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0"
+            >
+                <div
+                    v-if="statusMessage() && showStatus"
+                    class="mb-4 rounded-lg border border-green-200 bg-green-50 p-4"
+                >
                     <div class="flex items-center justify-between">
                         <div class="flex items-center">
-                            <CheckCircleIcon class="w-5 h-5 text-green-600 mr-2" />
-                            <p class="text-sm font-medium text-green-800">{{ statusMessage() }}</p>
+                            <CheckCircleIcon
+                                class="mr-2 h-5 w-5 text-green-600"
+                            />
+                            <p class="text-sm font-medium text-green-800">
+                                {{ statusMessage() }}
+                            </p>
                         </div>
-                        <button @click="dismissStatus" class="text-green-600 hover:text-green-800">
-                            <XMarkIcon class="w-5 h-5" />
+                        <button
+                            @click="dismissStatus"
+                            class="text-green-600 hover:text-green-800"
+                        >
+                            <XMarkIcon class="h-5 w-5" />
                         </button>
                     </div>
                 </div>
             </Transition>
 
             <!-- Error Messages -->
-            <Transition enter-active-class="transition ease-out duration-300"
+            <Transition
+                enter-active-class="transition ease-out duration-300"
                 enter-from-class="opacity-0 transform translate-y-2"
                 enter-to-class="opacity-100 transform translate-y-0"
-                leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
-                leave-to-class="opacity-0">
-                <div v-if="errorMessage" class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                leave-active-class="transition ease-in duration-200"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0"
+            >
+                <div
+                    v-if="errorMessage"
+                    class="mb-4 rounded-lg border border-red-200 bg-red-50 p-4"
+                >
                     <div class="flex items-center justify-between">
                         <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-red-600 mr-2" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="mr-2 h-5 w-5 text-red-600"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                />
                             </svg>
-                            <p class="text-sm font-medium text-red-800">{{ errorMessage }}</p>
+                            <p class="text-sm font-medium text-red-800">
+                                {{ errorMessage }}
+                            </p>
                         </div>
-                        <button @click="validationError = null" class="text-red-600 hover:text-red-800">
-                            <XMarkIcon class="w-5 h-5" />
+                        <button
+                            @click="validationError = null"
+                            class="text-red-600 hover:text-red-800"
+                        >
+                            <XMarkIcon class="h-5 w-5" />
                         </button>
                     </div>
                 </div>
             </Transition>
 
             <div class="group relative bg-white">
-                <img :src="coverSrc" class="bg-white w-full h-[200px] object-cover" alt="Default cover image">
-                <div class="absolute top-2 right-2 bg-gray-800 p-2 opacity-0 group-hover:opacity-100 rounded-full">
-                    <button v-if="!coverImageSrc"
-                        class="bg-gray-800 text-white py-1 px-2 text-sm flex items-center rounded-md">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-4 h-4 mr-2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                <img
+                    :src="coverSrc"
+                    class="h-[200px] w-full bg-white object-cover"
+                    alt="Default cover image"
+                />
+                <div
+                    class="absolute top-2 right-2 rounded-full bg-gray-800 p-2 opacity-0 group-hover:opacity-100"
+                >
+                    <button
+                        v-if="!coverImageSrc"
+                        class="flex items-center rounded-md bg-gray-800 px-2 py-1 text-sm text-white"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5"
+                            stroke="currentColor"
+                            class="mr-2 h-4 w-4"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+                            />
                         </svg>
 
                         Update Cover
-                        <Input type="file" class="absolute inset-0 opacity-0 cursor-pointer" @change="onCoverChange" />
+                        <Input
+                            type="file"
+                            class="absolute inset-0 cursor-pointer opacity-0"
+                            @change="onCoverChange"
+                        />
                     </button>
                     <div v-else class="flex gap-2 whitespace-nowrap">
-                        <button @click="cancelCoverImage"
-                            class="bg-white hover:bg-gray-200 text-gray-900 py-1 px-2 text-xs inline-flex items-center cursor-pointer rounded-sm">
-                            <XMarkIcon class="w-4 h-4 mr-2" />
+                        <button
+                            @click="cancelCoverImage"
+                            class="inline-flex cursor-pointer items-center rounded-sm bg-white px-2 py-1 text-xs text-gray-900 hover:bg-gray-200"
+                        >
+                            <XMarkIcon class="mr-2 h-4 w-4" />
 
                             Cancel
                         </button>
-                        <button @click="submitCoverImage"
-                            class="bg-gray-950 hover:bg-gray-900 text-gray-100 py-1 px-2 text-xs inline-flex items-center cursor-pointer rounded-sm">
-                            <CheckCircleIcon class="w-4 h-4 mr-2" />
+                        <button
+                            @click="submitCoverImage"
+                            class="inline-flex cursor-pointer items-center rounded-sm bg-gray-950 px-2 py-1 text-xs text-gray-100 hover:bg-gray-900"
+                        >
+                            <CheckCircleIcon class="mr-2 h-4 w-4" />
 
                             Submit
                         </button>
                     </div>
                 </div>
                 <div class="flex">
-                    <div class="group/avatar relative ml-[48px] w-[128px] h-[128px] -mt-[64px]">
-                        <img :src="avatarSrc" class="w-full h-full rounded-full object-cover border-4 border-slate-900"
-                            alt="Profile picture">
+                    <div
+                        class="group/avatar relative -mt-[64px] ml-[48px] h-[128px] w-[128px]"
+                    >
+                        <img
+                            :src="avatarSrc"
+                            class="h-full w-full rounded-full border-4 border-slate-900 object-cover"
+                            alt="Profile picture"
+                        />
                         <div
-                            class="absolute inset-0 bg-gray-900 bg-opacity-0 group-hover/avatar:bg-opacity-50 rounded-full transition-all duration-200 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100">
-                            <button v-if="!avatarImageSrc"
-                                class="bg-indigo-700 hover:bg-indigo-900 text-white py-1.5 px-3 text-xs flex items-center cursor-pointer rounded-md shadow-lg relative">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                            class="bg-opacity-0 group-hover/avatar:bg-opacity-50 absolute inset-0 flex items-center justify-center rounded-full bg-gray-900 opacity-0 transition-all duration-200 group-hover/avatar:opacity-100"
+                        >
+                            <button
+                                v-if="!avatarImageSrc"
+                                class="relative flex cursor-pointer items-center rounded-md bg-indigo-700 px-3 py-1.5 text-xs text-white shadow-lg hover:bg-indigo-900"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke-width="1.5"
+                                    stroke="currentColor"
+                                    class="mr-1.5 h-4 w-4"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                                    />
                                 </svg>
                                 Update
-                                <input type="file" class="absolute inset-0 opacity-0 cursor-pointer"
-                                    @change="onAvatarChange" />
+                                <input
+                                    type="file"
+                                    class="absolute inset-0 cursor-pointer opacity-0"
+                                    @change="onAvatarChange"
+                                />
                             </button>
                             <div v-else class="flex gap-2">
-                                <button @click="cancelAvatarImage"
-                                    class="bg-white hover:bg-gray-100 text-gray-800 py-1.5 px-2 text-xs inline-flex items-center cursor-pointer rounded-md shadow-lg">
-                                    <XMarkIcon class="w-4 h-4" />
+                                <button
+                                    @click="cancelAvatarImage"
+                                    class="inline-flex cursor-pointer items-center rounded-md bg-white px-2 py-1.5 text-xs text-gray-800 shadow-lg hover:bg-gray-100"
+                                >
+                                    <XMarkIcon class="h-4 w-4" />
                                 </button>
-                                <button @click="submitAvatarImage"
-                                    class="bg-gray-800 hover:bg-gray-900 text-white py-1.5 px-2 text-xs inline-flex items-center cursor-pointer rounded-md shadow-lg">
-                                    <CheckCircleIcon class="w-4 h-4" />
+                                <button
+                                    @click="submitAvatarImage"
+                                    class="inline-flex cursor-pointer items-center rounded-md bg-gray-800 px-2 py-1.5 text-xs text-white shadow-lg hover:bg-gray-900"
+                                >
+                                    <CheckCircleIcon class="h-4 w-4" />
                                 </button>
                             </div>
                         </div>
                     </div>
-                    <div class="flex justify-between item-center flex-1 p-4 text-2xl font-semibold text-gray-700">
+                    <div
+                        class="item-center flex flex-1 justify-between p-4 text-2xl font-semibold text-gray-700"
+                    >
                         {{ user.name }}
 
                         <div class="flex justify-evenly">
                             <Button class="cursor-pointer">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 24"
-                                    stroke-width="1.5" stroke="currentColor" class="size-6">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 20 24"
+                                    stroke-width="1.5"
+                                    stroke="currentColor"
+                                    class="size-6"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                                    />
                                 </svg>
                                 Edit Profile
                             </Button>
                         </div>
                     </div>
                 </div>
-
             </div>
             <div class="border-t">
                 <TabGroup>
@@ -145,7 +236,10 @@
 
                     <TabPanels class="mt-2">
                         <TabPanel key="about" class="bg-white p-3 shadow">
-                            <Profile :must-verify-email="mustVerifyEmail" :status="status" />
+                            <Profile
+                                :must-verify-email="mustVerifyEmail"
+                                :status="status"
+                            />
                         </TabPanel>
                     </TabPanels>
 
@@ -176,22 +270,20 @@
             </div>
         </div>
     </AppLayout>
-
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
-import { XMarkIcon, CheckCircleIcon } from '@heroicons/vue/24/solid'
-import { TabGroup, TabList, Tab, TabPanels, TabPanel } from '@headlessui/vue'
-import { usePage } from '@inertiajs/vue3';
-import AppLayout from '@/layouts/AppLayout.vue';
-import TabItem from './Partials/TabItem.vue';
-import Profile from './Profile.vue';
 import Button from '@/components/ui/button/Button.vue';
-import { useForm } from "@inertiajs/vue3";
-import { updateImage } from '@/routes/profile';
 import Input from '@/components/ui/input/Input.vue';
 import { useFlashMessage } from '@/composables/useFlashMessage';
+import AppLayout from '@/layouts/AppLayout.vue';
+import { updateImage } from '@/routes/profile';
+import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/vue';
+import { CheckCircleIcon, XMarkIcon } from '@heroicons/vue/24/solid';
+import { useForm } from '@inertiajs/vue3';
+import { computed, ref, watch } from 'vue';
+import TabItem from './Partials/TabItem.vue';
+import Profile from './Profile.vue';
 
 const imagesForm = useForm({
     avatar: null,
@@ -207,10 +299,14 @@ const props = defineProps({
         type: Object,
         required: true,
     },
-})
+});
 
 // Use flash message composable for status messages
-const { showMessage: showStatus, message: statusMessage, dismiss: dismissStatus } = useFlashMessage('status', 5000);
+const {
+    showMessage: showStatus,
+    message: statusMessage,
+    dismiss: dismissStatus,
+} = useFlashMessage('status', 5000);
 
 const validationError = ref(null);
 
@@ -240,8 +336,11 @@ const coverSrc = computed(() => {
 
     // Using backend-provided cover_url. If it's an absolute URL, return as-is.
     if (user.value && user.value.cover_url) {
-        if (/^(https?:)?\/\//.test(user.value.cover_url)) return user.value.cover_url;
-        return user.value.cover_url.startsWith('/') ? user.value.cover_url : `/${user.value.cover_url}`;
+        if (/^(https?:)?\/\//.test(user.value.cover_url))
+            return user.value.cover_url;
+        return user.value.cover_url.startsWith('/')
+            ? user.value.cover_url
+            : `/${user.value.cover_url}`;
     }
 
     // Fallback to the public default image if no cover image is set
@@ -254,8 +353,11 @@ const avatarSrc = computed(() => {
 
     // Using backend-provided profile_picture_url
     if (user.value && user.value.profile_picture_url) {
-        if (/^(https?:)?\/\//.test(user.value.profile_picture_url)) return user.value.profile_picture_url;
-        return user.value.profile_picture_url.startsWith('/') ? user.value.profile_picture_url : `/${user.value.profile_picture_url}`;
+        if (/^(https?:)?\/\//.test(user.value.profile_picture_url))
+            return user.value.profile_picture_url;
+        return user.value.profile_picture_url.startsWith('/')
+            ? user.value.profile_picture_url
+            : `/${user.value.profile_picture_url}`;
     }
 
     // Fallback to default avatar
@@ -271,14 +373,21 @@ function onCoverChange(event) {
     validationError.value = null;
 
     // Validation file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    const allowedTypes = [
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+    ];
     if (!allowedTypes.includes(file.type)) {
-        validationError.value = 'Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image.';
+        validationError.value =
+            'Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image.';
         event.target.value = ''; // Clear the input
         return;
     }
 
-    // Validation file size 
+    // Validation file size
     const maxSize = 2 * 1024 * 1024; // 2MB in bytes
     if (file.size > maxSize) {
         const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
@@ -290,7 +399,7 @@ function onCoverChange(event) {
     // If validation passes, proceed with the upload
     imagesForm.cover = file;
 
-    // handling preview 
+    // handling preview
     const reader = new FileReader();
     reader.onload = (e) => {
         coverImageSrc.value = e.target && e.target.result;
@@ -325,14 +434,21 @@ function onAvatarChange(event) {
     validationError.value = null;
 
     // Validation file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    const allowedTypes = [
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+    ];
     if (!allowedTypes.includes(file.type)) {
-        validationError.value = 'Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image.';
+        validationError.value =
+            'Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image.';
         event.target.value = ''; // Clear the input
         return;
     }
 
-    // Validation file size 
+    // Validation file size
     const maxSize = 2 * 1024 * 1024; // 2MB in bytes
     if (file.size > maxSize) {
         const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
@@ -344,7 +460,7 @@ function onAvatarChange(event) {
     // If validation passes, proceed with the upload
     imagesForm.avatar = file;
 
-    // handling preview 
+    // handling preview
     const reader = new FileReader();
     reader.onload = (e) => {
         avatarImageSrc.value = e.target && e.target.result;
