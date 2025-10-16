@@ -3,6 +3,8 @@ import type { Post, PostAttachment } from '@/types';
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue';
 import { usePage } from '@inertiajs/vue3';
 import { computed, ref, onMounted, nextTick } from 'vue';
+import AttachmentFullScreen from './AttachmentFullScreen.vue';
+import AttachmentPreview from './AttachmentPreview.vue';
 import DeletePostDialog from './DeletePostDialog.vue';
 import EditPostModal from './EditPostModal.vue';
 import PostMenu from './PostMenu.vue';
@@ -14,19 +16,23 @@ const props = defineProps<{
 const page = usePage();
 const authUser = computed(() => page.props.auth.user);
 
-// Check if the current user owns this post
+// Checking if the current user owns this post
 const canManagePost = computed(() => authUser.value.id === props.post.user.id);
 
 // Modal states
 const isEditModalOpen = ref(false);
 const isDeleteDialogOpen = ref(false);
 
+// Attachment viewer state
+const isAttachmentViewerOpen = ref(false);
+const currentAttachmentIndex = ref(0);
+
 // Refs for post content containers
 const postContentRef = ref<HTMLDivElement | null>(null);
 const postContentFullRef = ref<HTMLDivElement | null>(null);
 
 function isImage(attachment: PostAttachment) {
-    const mime = attachment.mime.split('/');
+    const mime = attachment.mime_type.split('/');
     return mime[0] === 'image';
 }
 
@@ -38,20 +44,25 @@ const openDeleteDialog = () => {
     isDeleteDialogOpen.value = true;
 };
 
+function openAttachmentViewer(attachment: PostAttachment, index: number) {
+    currentAttachmentIndex.value = index;
+    isAttachmentViewerOpen.value = true;
+}
+
 // Function to make links in HTML content clickable
 const makeLinksClickable = (element: HTMLElement | null) => {
     if (!element) return;
 
     const links = element.querySelectorAll('a');
     links.forEach((link) => {
-        // Ensure the link has proper attributes
+        // Ensuring the link has proper attributes
         if (!link.hasAttribute('target')) {
             link.setAttribute('target', '_blank');
         }
         if (!link.hasAttribute('rel')) {
             link.setAttribute('rel', 'noopener noreferrer');
         }
-        // Add click handler to ensure navigation works
+        // Adding click handler to ensure navigation works
         link.addEventListener('click', (e) => {
             e.stopPropagation();
             const href = link.getAttribute('href');
@@ -89,7 +100,7 @@ onMounted(() => {
                 </template>
                 <span class="mt-1 text-xs text-gray-400">{{
                     post.created_at
-                    }}</span>
+                }}</span>
             </div>
 
             <!-- Post Menu (only shown to post owner) -->
@@ -108,23 +119,12 @@ onMounted(() => {
                 </DisclosureButton>
             </Disclosure>
         </div>
-        <div class="mb-3 grid grid-cols-2 gap-3 lg:grid-cols-3">
-            <template v-for="attachment in post.attachments">
-                <div
-                    class="group flec relative aspect-square flex-col items-center justify-center bg-indigo-100 text-gray-500">
-                    <button
-                        class="item-center absolute top-2 right-2 flex h-8 w-8 cursor-pointer justify-center rounded bg-gray-800 text-white opacity-0 transition-all group-hover:opacity-100 hover:bg-gray-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="size-6">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M9 8.25H7.5a2.25 2.25 0 0 0-2.25 2.25v9a2.25 2.25 0 0 0 2.25 2.25h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25H15M9 12l3 3m0 0 3-3m-3 3V2.25" />
-                        </svg>
-                    </button>
-                    <img v-if="isImage(attachment)" :src="attachment.url" alt="No image to show"
-                        class="aspect-square object-cover" />
-                </div>
-            </template>
+
+        <!-- Attachments -->
+        <div v-if="post.attachments.length > 0" class="mb-3">
+            <AttachmentPreview :attachments="post.attachments" @click="openAttachmentViewer" />
         </div>
+
         <div class="flex gap-2">
             <button
                 class="flex flex-1 cursor-pointer items-center justify-center gap-1 rounded-lg bg-gray-100 px-4 py-2 text-gray-800 hover:bg-gray-200">
@@ -152,6 +152,11 @@ onMounted(() => {
 
         <!-- Delete Confirmation Dialog -->
         <DeletePostDialog :post="post" :is-open="isDeleteDialogOpen" @update:is-open="isDeleteDialogOpen = $event" />
+
+        <!-- Attachment Full Screen Viewer -->
+        <AttachmentFullScreen v-if="post.attachments.length > 0" :attachments="post.attachments"
+            :initial-index="currentAttachmentIndex" :is-open="isAttachmentViewerOpen"
+            @update:is-open="isAttachmentViewerOpen = $event" />
     </div>
 </template>
 
@@ -159,7 +164,6 @@ onMounted(() => {
 /* Style for links in post content */
 .post-content :deep(a) {
     color: #4f46e5;
-    /* indigo-600 */
     text-decoration: underline;
     cursor: pointer;
     transition: color 0.2s ease;
@@ -167,7 +171,7 @@ onMounted(() => {
 
 .post-content :deep(a:hover) {
     color: #4338ca;
-    /* indigo-700 */
+
 }
 
 /* Style for CKEditor formatted content */

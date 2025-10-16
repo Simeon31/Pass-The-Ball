@@ -25,6 +25,36 @@ class UpdatePostRequest extends FormRequest
     {
         return [
             'body' => ['nullable', 'string'],
+            'attachments' => ['nullable', 'array', 'max:10'],
+            'attachments.*' => [
+                'file',
+                'mimes:jpg,jpeg,png,gif,webp,mp4,webm,mov,avi,pdf',
+                function ($attribute, $value, $fail) {
+                    if (!$value instanceof \Illuminate\Http\UploadedFile) {
+                        return;
+                    }
+
+                    $mimeType = $value->getMimeType();
+                    $size = $value->getSize();
+
+                    // Image: max 10MB
+                    if (str_starts_with($mimeType, 'image/') && $size > 10 * 1024 * 1024) {
+                        $fail('Images must not be larger than 10MB.');
+                    }
+
+                    // Video: max 50MB
+                    if (str_starts_with($mimeType, 'video/') && $size > 50 * 1024 * 1024) {
+                        $fail('Videos must not be larger than 50MB.');
+                    }
+
+                    // PDF: max 20MB
+                    if ($mimeType === 'application/pdf' && $size > 20 * 1024 * 1024) {
+                        $fail('PDFs must not be larger than 20MB.');
+                    }
+                },
+            ],
+            'deleted_attachments' => ['nullable', 'array'],
+            'deleted_attachments.*' => ['integer', 'exists:post_attachments,id'],
         ];
     }
 

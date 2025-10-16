@@ -46,8 +46,10 @@ export interface Group {
 export interface PostAttachment {
     id: number;
     name: string;
-    mime: string;
+    mime_type: string;
+    size: number;
     url: string;
+    created_at: string;
 }
 
 export interface Post {

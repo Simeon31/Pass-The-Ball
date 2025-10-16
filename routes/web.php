@@ -22,5 +22,8 @@ Route::put('/post/{post}', [PostController::class, 'update'])
 Route::delete('/post/{post}', [PostController::class, 'destroy'])
     ->middleware(['auth', 'verified'])->name('post.destroy');
 
+Route::get('/post/attachment/{attachment}/download', [PostController::class, 'downloadAttachment'])
+    ->middleware(['auth', 'verified'])->name('post.attachment.download');
+
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
