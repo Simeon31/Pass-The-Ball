@@ -56,6 +56,33 @@ class CommentController extends Controller
     }
 
     /**
+     * Update a comment
+     */
+    public function update(Request $request, Comment $comment)
+    {
+        // Check if user owns the comment
+        if (auth()->id() !== $comment->user_id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'comment' => 'required|string|max:2000',
+        ]);
+
+        $comment->update([
+            'comment' => $request->input('comment'),
+        ]);
+
+        // Load the user relationship
+        $comment->load('user');
+
+        return response()->json([
+            'message' => 'Comment updated successfully',
+            'comment' => new CommentResource($comment),
+        ]);
+    }
+
+    /**
      * Delete a comment
      */
     public function destroy(Comment $comment)

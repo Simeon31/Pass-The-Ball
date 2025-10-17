@@ -98,6 +98,25 @@ const deleteComment = async (commentId: number) => {
     }
 };
 
+const updateComment = async (commentId: number, commentText: string) => {
+    try {
+        const response = await axios.put(`/comment/${commentId}`, {
+            comment: commentText,
+        });
+
+        const updatedComment = response.data.comment as Comment;
+
+        // Update in local list
+        const index = localComments.value.findIndex(c => c.id === commentId);
+        if (index !== -1) {
+            localComments.value[index] = updatedComment;
+        }
+    } catch (error) {
+        console.error('Error updating comment:', error);
+        alert('Failed to update comment. Please try again.');
+    }
+};
+
 const canDeleteComment = (comment: Comment) => {
     // User can delete their own comment or if they own the post
     return authUser.value.id === comment.user.id;
@@ -146,7 +165,8 @@ defineExpose({
         <!-- Comments List -->
         <div v-if="localComments.length > 0" class="space-y-1">
             <CommentItem v-for="comment in localComments" :key="comment.id" :comment="comment"
-                :can-delete="canDeleteComment(comment)" @delete="deleteComment(comment.id)" />
+                :can-delete="canDeleteComment(comment)" @delete="deleteComment(comment.id)"
+                @update="(commentText) => updateComment(comment.id, commentText)" />
         </div>
 
         <!-- Load More Button -->

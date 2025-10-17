@@ -19,8 +19,8 @@ class CommentResource extends JsonResource
             'post_id' => $this->post_id,
             'comment' => $this->comment,
             'user' => new UserResource($this->user),
-            'created_at' => $this->created_at->format('Y-m-d H:i'),
-            'updated_at' => $this->updated_at->format('Y-m-d H:i'),
+            'created_at' => $this->created_at->toISOString(),
+            'updated_at' => $this->updated_at->toISOString(),
         ];
     }
 }

@@ -42,6 +42,9 @@ Route::post('/post/{post}/comment', [CommentController::class, 'store'])
 Route::get('/post/{post}/comments', [CommentController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('post.comment.index');
 
+Route::put('/comment/{comment}', [CommentController::class, 'update'])
+    ->middleware(['auth', 'verified'])->name('comment.update');
+
 Route::delete('/comment/{comment}', [CommentController::class, 'destroy'])
     ->middleware(['auth', 'verified'])->name('comment.destroy');
 
