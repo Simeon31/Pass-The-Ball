@@ -1,6 +1,9 @@
 <script setup lang="ts">
-import type { Comment } from '@/types';
-import { computed, ref } from 'vue';
+import type { Comment, ReactionType } from '@/types';
+import { useCommentBroadcasting } from '@/composables/useCommentBroadcasting';
+import axios from 'axios';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import ReactionPicker from './ReactionPicker.vue';
 
 const props = defineProps<{
     comment: Comment;
@@ -10,12 +13,44 @@ const props = defineProps<{
 const emit = defineEmits<{
     delete: [];
     update: [commentText: string];
+    'reactions-updated': [reactions: Comment['reactions']];
 }>();
 
 const showFull = ref(false);
 const isEditing = ref(false);
 const editText = ref('');
 const characterLimit = 100;
+
+// Reactions state
+const localReactions = ref(props.comment.reactions);
+
+const handleReaction = async (type: ReactionType) => {
+    try {
+        const response = await axios.post(`/comment/${props.comment.id}/reaction`, {
+            type,
+        });
+
+        // Update local reactions state
+        localReactions.value = response.data.reactions;
+        emit('reactions-updated', response.data.reactions);
+    } catch (error) {
+        console.error('Error reacting to comment:', error);
+    }
+};
+
+// Real-time reaction updates
+const { listenForReactions, disconnect } = useCommentBroadcasting(props.comment.id);
+
+onMounted(() => {
+    listenForReactions((reactions) => {
+        localReactions.value = reactions;
+        emit('reactions-updated', reactions);
+    });
+});
+
+onUnmounted(() => {
+    disconnect();
+});
 
 const isLongComment = computed(() => props.comment.comment.length > characterLimit);
 const displayedComment = computed(() => {
@@ -129,6 +164,12 @@ const saveEdit = () => {
                     class="font-semibold text-red-600 opacity-0 transition-opacity hover:underline group-hover:opacity-100">
                     Delete
                 </button>
+            </div>
+
+            <!-- Reaction Picker -->
+            <div class="mt-2 px-3">
+                <ReactionPicker :current-reaction="localReactions.current_user_reaction"
+                    :total-reactions="localReactions.total" @react="handleReaction" />
             </div>
         </div>
     </div>

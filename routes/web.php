@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\GroupController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostReactionController;
+use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
@@ -31,9 +33,11 @@ Route::delete('/post/{post}', [PostController::class, 'destroy'])
 Route::get('/post/attachment/{attachment}/download', [PostController::class, 'downloadAttachment'])
     ->middleware(['auth', 'verified'])->name('post.attachment.download');
 
-// Post Reactions
-Route::post('/post/{post}/reaction', [PostReactionController::class, 'toggle'])
-    ->middleware(['auth', 'verified'])->name('post.reaction.toggle');
+// Reactions (Polymorphic - Posts and Comments)
+Route::post('/{type}/{id}/reaction', [ReactionController::class, 'toggle'])
+    ->middleware(['auth', 'verified'])
+    ->where(['type' => 'post|comment', 'id' => '[0-9]+'])
+    ->name('reaction.toggle');
 
 // Comments
 Route::post('/post/{post}/comment', [CommentController::class, 'store'])

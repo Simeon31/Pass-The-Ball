@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Events\PostReacted;
 use App\Models\Post;
-use App\Models\PostReaction;
+use App\Models\Reaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -16,14 +16,15 @@ class PostReactionController extends Controller
     public function toggle(Request $request, Post $post)
     {
         $request->validate([
-            'type' => 'required|in:' . implode(',', PostReaction::TYPES),
+            'type' => 'required|in:' . implode(',', Reaction::TYPES),
         ]);
 
         $userId = $request->user()->id;
         $type = $request->input('type');
 
         // Find existing reaction
-        $existingReaction = PostReaction::where('post_id', $post->id)
+        $existingReaction = Reaction::where('reactable_type', Post::class)
+            ->where('reactable_id', $post->id)
             ->where('user_id', $userId)
             ->first();
 
@@ -39,8 +40,9 @@ class PostReactionController extends Controller
             }
         } else {
             // No existing reaction - create new one
-            PostReaction::create([
-                'post_id' => $post->id,
+            Reaction::create([
+                'reactable_type' => Post::class,
+                'reactable_id' => $post->id,
                 'user_id' => $userId,
                 'type' => $type,
             ]);
@@ -48,16 +50,20 @@ class PostReactionController extends Controller
         }
 
         // Get updated reactions summary
-        $reactionsSummary = PostReaction::where('post_id', $post->id)
+        $reactionsSummary = Reaction::where('reactable_type', Post::class)
+            ->where('reactable_id', $post->id)
             ->select('type', DB::raw('count(*) as count'))
             ->groupBy('type')
             ->get()
             ->pluck('count', 'type')
             ->toArray();
 
-        $totalReactions = PostReaction::where('post_id', $post->id)->count();
+        $totalReactions = Reaction::where('reactable_type', Post::class)
+            ->where('reactable_id', $post->id)
+            ->count();
 
-        $currentUserReaction = PostReaction::where('post_id', $post->id)
+        $currentUserReaction = Reaction::where('reactable_type', Post::class)
+            ->where('reactable_id', $post->id)
             ->where('user_id', $userId)
             ->first();
 

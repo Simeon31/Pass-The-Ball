@@ -71,6 +71,7 @@ export interface Comment {
     user: User;
     created_at: string;
     updated_at: string;
+    reactions: PostReactions;
 }
 
 export interface PostComments {
