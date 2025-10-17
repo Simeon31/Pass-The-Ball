@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { index } from '@/actions/App/Http/Controllers/Settings/ProfileController';
+import { show } from '@/actions/App/Http/Controllers/ProfileController';
 import UserInfo from '@/components/UserInfo.vue';
 import {
     DropdownMenuGroup,
@@ -10,7 +10,7 @@ import {
 import { logout } from '@/routes';
 import type { User } from '@/types';
 import { Link, router } from '@inertiajs/vue3';
-import { LogOut, Settings } from 'lucide-vue-next';
+import { LogOut, Settings, User as UserIcon } from 'lucide-vue-next';
 
 interface Props {
     user: User;
@@ -32,28 +32,23 @@ defineProps<Props>();
     <DropdownMenuSeparator />
     <DropdownMenuGroup>
         <DropdownMenuItem :as-child="true">
-            <Link
-                class="block w-full"
-                :href="index(user.username)"
-                prefetch
-                as="button"
-            >
-                <Settings class="mr-2 h-4 w-4" />
-                Settings
+            <Link class="block w-full" :href="show(user.username).url" prefetch as="button">
+            <UserIcon class="mr-2 h-4 w-4" />
+            Profile
+            </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem :as-child="true">
+            <Link class="block w-full" href="/settings/profile" prefetch as="button">
+            <Settings class="mr-2 h-4 w-4" />
+            Settings
             </Link>
         </DropdownMenuItem>
     </DropdownMenuGroup>
     <DropdownMenuSeparator />
     <DropdownMenuItem :as-child="true">
-        <Link
-            class="block w-full"
-            :href="logout()"
-            @click="handleLogout"
-            as="button"
-            data-test="logout-button"
-        >
-            <LogOut class="mr-2 h-4 w-4" />
-            Log out
+        <Link class="block w-full" :href="logout()" @click="handleLogout" as="button" data-test="logout-button">
+        <LogOut class="mr-2 h-4 w-4" />
+        Log out
         </Link>
     </DropdownMenuItem>
 </template>

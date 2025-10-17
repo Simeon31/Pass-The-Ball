@@ -9,12 +9,12 @@ use Inertia\Inertia;
 Route::middleware('auth')->group(function () {
     Route::redirect('settings', '/settings/profile');
 
-    Route::get('settings/profile/u/{user:username}', [ProfileController::class, 'index'])->name('profile');
+    // Settings routes (for editing own profile)
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('settings/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::post('settings/profile/update-images', [ProfileController::class, 'updateImage'])
-        ->name('profile.updateCover');
+    Route::post('settings/profile/update-images', [ProfileController::class, 'updateImages'])
+        ->name('profile.updateImages');
 
     Route::get('settings/password', [PasswordController::class, 'edit'])->name('password.edit');
 

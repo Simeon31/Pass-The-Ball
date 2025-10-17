@@ -60,4 +60,12 @@ class User extends Authenticatable implements MustVerifyEmail
             ->saveSlugsTo('username')
             ->doNotGenerateSlugsOnUpdate();
     }
+
+    /**
+     * Get the posts for the user.
+     */
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
 }

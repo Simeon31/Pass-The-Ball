@@ -21,14 +21,6 @@ class ProfileController extends Controller
     /**
      * Show the user's profile settings page.
      */
-
-    public function index(User $user)
-    {
-        return Inertia::render('settings/View', [
-            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
-            'user' => new UserResource($user),
-        ]);
-    }
     public function edit(Request $request): Response
     {
         return Inertia::render('settings/Profile', [
@@ -77,8 +69,7 @@ class ProfileController extends Controller
     /**
      * Update the user's cover and avatar images.
      */
-
-    public function updateImage(Request $request, User $user): RedirectResponse
+    public function updateImages(Request $request): RedirectResponse
     {
         $data = $request->validate([
             'cover' => ['nullable', 'image', 'mimes:jpeg,jpg,png,gif,webp', 'max:2048'], // Max size 2MB
@@ -151,8 +142,8 @@ class ProfileController extends Controller
 
         $u->save();
 
-        // Redirecting back to the profile page with a success flash message
-        return redirect()->route('profile', ['user' => $u->username])
-            ->with('status', 'Profile image updated successfully.');
+        // Redirecting back to the profile view page with a success flash message
+        return redirect()->route('profile.show', ['user' => $u->username])
+            ->with('status', 'Profile images updated successfully.');
     }
 }

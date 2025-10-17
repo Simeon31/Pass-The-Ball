@@ -3,7 +3,7 @@
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostReactionController;
-use App\Http\Controllers\Settings\ProfileController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -14,6 +14,10 @@ Route::get('/', [WelcomeController::class, 'index'])
 Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+// Public Profile View Route (Facebook-like)
+Route::get('/profile/{user:username}', [ProfileController::class, 'show'])
+    ->middleware(['auth', 'verified'])->name('profile.show');
 
 Route::post('/post', [PostController::class, 'store'])
     ->middleware(['auth', 'verified'])->name('post.create');
