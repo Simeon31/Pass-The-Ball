@@ -143,7 +143,7 @@ class ProfileController extends Controller
         $u->save();
 
         // Redirecting back to the profile view page with a success flash message
-        return redirect()->route('profile.show', ['user' => $u->username])
+        return redirect()->route('profile.show', ['username' => $u->username])
             ->with('status', 'Profile images updated successfully.');
     }
 }

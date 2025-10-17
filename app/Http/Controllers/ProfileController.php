@@ -13,18 +13,31 @@ class ProfileController extends Controller
     /**
      * Display the user's profile page (Facebook-like public view).
      */
-    public function show(User $user): Response
+    public function show($username): Response
     {
-        // Load relationships if needed
+        // Find user by username
+        $user = User::where('username', $username)->firstOrFail();
+
+        // Load relationships
         $user->load([
             'posts' => function ($query) {
-                $query->latest()->with(['user', 'reactions', 'comments']);
+                $query->latest()
+                    ->with([
+                        'user',
+                        'reactions',
+                        'comments.user',
+                        'comments.reactions',
+                        'attachments'
+                    ]);
             }
         ]);
 
+        // Transform posts using PostResource
+        $posts = \App\Http\Resources\PostResource::collection($user->posts);
+
         return Inertia::render('Profile', [
             'user' => new UserResource($user),
-            'posts' => $user->posts,
+            'posts' => $posts,
         ]);
     }
 }

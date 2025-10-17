@@ -17,8 +17,22 @@ Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Public Profile View Route (Facebook-like)
-Route::get('/profile/{user:username}', [ProfileController::class, 'show'])
+// Redirect /profile to current user's profile
+Route::get('/profile', function () {
+    $user = auth()->user();
+
+    if (!$user) {
+        return redirect()->route('login');
+    }
+
+    // If username is missing, trigger Spatie Sluggable to regenerate it
+    if (empty($user->username)) {
+        $user->save(); // This uses the existing slug generation in User model
+    }
+
+    return redirect("/profile/{$user->username}");
+})->middleware(['auth', 'verified'])->name('profile');// Public Profile View Route (Facebook-like)
+Route::get('/profile/{username}', [ProfileController::class, 'show'])
     ->middleware(['auth', 'verified'])->name('profile.show');
 
 Route::post('/post', [PostController::class, 'store'])
