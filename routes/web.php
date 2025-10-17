@@ -60,6 +60,9 @@ Route::post('/post/{post}/comment', [CommentController::class, 'store'])
 Route::get('/post/{post}/comments', [CommentController::class, 'index'])
     ->middleware(['auth', 'verified'])->name('post.comment.index');
 
+Route::get('/comment/{comment}/replies', [CommentController::class, 'replies'])
+    ->middleware(['auth', 'verified'])->name('comment.replies');
+
 Route::put('/comment/{comment}', [CommentController::class, 'update'])
     ->middleware(['auth', 'verified'])->name('comment.update');
 

@@ -6,27 +6,61 @@ use App\Events\CommentCreated;
 use App\Http\Resources\CommentResource;
 use App\Models\Comment;
 use App\Models\Post;
+use App\Services\CommentTreeService;
 use Illuminate\Http\Request;
 
 class CommentController extends Controller
 {
     /**
-     * Store a newly created comment
+     * Comment tree service for handling nested comments.
+     */
+    protected CommentTreeService $treeService;
+
+    public function __construct(CommentTreeService $treeService)
+    {
+        $this->treeService = $treeService;
+    }
+
+    /**
+     * Store a newly created comment or reply.
      */
     public function store(Request $request, Post $post)
     {
-        $request->validate([
+        $validated = $request->validate([
             'comment' => 'required|string|max:2000',
+            'parent_id' => 'nullable|exists:comments,id',
         ]);
+
+        // If replying to a comment, verify it belongs to this post
+        if (!empty($validated['parent_id'])) {
+            $parentComment = Comment::findOrFail($validated['parent_id']);
+
+            if ($parentComment->post_id !== $post->id) {
+                return response()->json([
+                    'message' => 'Parent comment does not belong to this post'
+                ], 422);
+            }
+
+            // Check if parent is at max depth
+            if ($parentComment->isAtMaxDepth()) {
+                return response()->json([
+                    'message' => 'Maximum comment nesting depth reached'
+                ], 422);
+            }
+        }
 
         $comment = Comment::create([
             'post_id' => $post->id,
             'user_id' => $request->user()->id,
-            'comment' => $request->input('comment'),
+            'comment' => $validated['comment'],
+            'parent_id' => $validated['parent_id'] ?? null,
         ]);
 
         // Load the user relationship
-        $comment->load('user');
+        $comment->load('user', 'reactions');
+
+        // Set depth for the resource
+        $comment->depth = $comment->parent_id ? $comment->getDepth() : 0;
 
         // Broadcast the new comment for real-time updates
         $commentResource = new CommentResource($comment);
@@ -39,24 +73,46 @@ class CommentController extends Controller
     }
 
     /**
-     * Get paginated comments for a post
+     * Get comments tree for a post with pagination.
      */
     public function index(Request $request, Post $post)
     {
         $perPage = $request->input('per_page', 5);
         $page = $request->input('page', 1);
 
-        // Get comments ordered by most recent first
-        $comments = $post->comments()
-            ->with('user')
-            ->orderBy('created_at', 'desc')
-            ->paginate($perPage);
+        // Get tree-structured comments
+        $result = $this->treeService->getCommentsTree($post, $page, $perPage);
 
-        return CommentResource::collection($comments);
+        return response()->json([
+            'data' => CommentResource::collection($result['data']),
+            'total' => $result['total'],
+            'has_more' => $result['hasMore'],
+            'current_page' => $page,
+            'per_page' => $perPage,
+        ]);
     }
 
     /**
-     * Update a comment
+     * Get replies for a specific comment (lazy loading).
+     */
+    public function replies(Request $request, Comment $comment)
+    {
+        $perPage = $request->input('per_page', 5);
+        $page = $request->input('page', 1);
+
+        $result = $this->treeService->getReplies($comment, $page, $perPage);
+
+        return response()->json([
+            'data' => CommentResource::collection($result['data']),
+            'total' => $result['total'],
+            'has_more' => $result['hasMore'],
+            'current_page' => $page,
+            'per_page' => $perPage,
+        ]);
+    }
+
+    /**
+     * Update a comment.
      */
     public function update(Request $request, Comment $comment)
     {
@@ -74,7 +130,8 @@ class CommentController extends Controller
         ]);
 
         // Load the user relationship
-        $comment->load('user');
+        $comment->load('user', 'reactions');
+        $comment->depth = $comment->getDepth();
 
         return response()->json([
             'message' => 'Comment updated successfully',
@@ -83,7 +140,8 @@ class CommentController extends Controller
     }
 
     /**
-     * Delete a comment
+     * Delete a comment.
+     * Cascade deletes all child comments due to foreign key constraint.
      */
     public function destroy(Comment $comment)
     {
@@ -92,8 +150,15 @@ class CommentController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
+        // Get count of descendants for feedback
+        $stats = $this->treeService->getThreadStats($comment);
+
         $comment->delete();
 
-        return response()->json(['message' => 'Comment deleted successfully']);
+        return response()->json([
+            'message' => 'Comment deleted successfully',
+            'deleted_replies' => $stats['total_replies'],
+        ]);
     }
 }
+

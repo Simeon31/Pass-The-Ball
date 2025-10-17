@@ -83,15 +83,27 @@ const loadMoreComments = async () => {
 
 const deleteComment = async (commentId: number) => {
     try {
-        await axios.delete(`/comment/${commentId}`);
+        const response = await axios.delete(`/comment/${commentId}`);
 
-        // Remove from local list
-        const index = localComments.value.findIndex(c => c.id === commentId);
-        if (index !== -1) {
-            localComments.value.splice(index, 1);
-        }
+        // Remove from local list (including nested replies due to cascade)
+        const removeCommentRecursive = (comments: Comment[], id: number): Comment[] => {
+            return comments.filter((c) => {
+                if (c.id === id) return false;
+                if (c.replies) {
+                    c.replies = removeCommentRecursive(c.replies, id);
+                }
+                return true;
+            });
+        };
+
+        localComments.value = removeCommentRecursive(localComments.value, commentId);
 
         emit('comment-deleted', commentId);
+
+        // Show feedback about deleted replies if any
+        if (response.data.deleted_replies > 0) {
+            console.log(`Deleted ${response.data.deleted_replies} nested replies`);
+        }
     } catch (error) {
         console.error('Error deleting comment:', error);
         alert('Failed to delete comment. Please try again.');
@@ -106,11 +118,20 @@ const updateComment = async (commentId: number, commentText: string) => {
 
         const updatedComment = response.data.comment as Comment;
 
-        // Update in local list
-        const index = localComments.value.findIndex(c => c.id === commentId);
-        if (index !== -1) {
-            localComments.value[index] = updatedComment;
-        }
+        // Update in local list (recursively search)
+        const updateCommentRecursive = (comments: Comment[]): void => {
+            for (let i = 0; i < comments.length; i++) {
+                if (comments[i].id === commentId) {
+                    comments[i] = { ...comments[i], ...updatedComment };
+                    return;
+                }
+                if (comments[i].replies) {
+                    updateCommentRecursive(comments[i].replies!);
+                }
+            }
+        };
+
+        updateCommentRecursive(localComments.value);
     } catch (error) {
         console.error('Error updating comment:', error);
         alert('Failed to update comment. Please try again.');
@@ -125,9 +146,34 @@ const canDeleteComment = (comment: Comment) => {
 // Method to add comment from external source (WebSocket)
 // Returns true if comment was added, false if it was a duplicate
 const addCommentFromBroadcast = (comment: Comment): boolean => {
-    // Check if comment already exists
-    if (!localComments.value.find(c => c.id === comment.id)) {
-        localComments.value.unshift(comment);
+    // Check if comment already exists (recursively)
+    const commentExists = (comments: Comment[], id: number): boolean => {
+        for (const c of comments) {
+            if (c.id === id) return true;
+            if (c.replies && commentExists(c.replies, id)) return true;
+        }
+        return false;
+    };
+
+    if (!commentExists(localComments.value, comment.id)) {
+        // If it's a top-level comment, add to the top
+        if (!comment.parent_id) {
+            localComments.value.unshift(comment);
+        } else {
+            // If it's a reply, find parent and add to its replies
+            const addToParent = (comments: Comment[]): boolean => {
+                for (const c of comments) {
+                    if (c.id === comment.parent_id) {
+                        if (!c.replies) c.replies = [];
+                        c.replies.push(comment);
+                        return true;
+                    }
+                    if (c.replies && addToParent(c.replies)) return true;
+                }
+                return false;
+            };
+            addToParent(localComments.value);
+        }
         return true; // Comment was added
     }
     return false; // Comment already exists
@@ -162,10 +208,10 @@ defineExpose({
             {{ totalComments }} {{ totalComments === 1 ? 'Comment' : 'Comments' }}
         </div>
 
-        <!-- Comments List -->
+        <!-- Comments Tree -->
         <div v-if="localComments.length > 0" class="space-y-1">
             <CommentItem v-for="comment in localComments" :key="comment.id" :comment="comment"
-                :can-delete="canDeleteComment(comment)" @delete="deleteComment(comment.id)"
+                :can-delete="canDeleteComment(comment)" :post-id="postId" @delete="deleteComment(comment.id)"
                 @update="(commentText) => updateComment(comment.id, commentText)" />
         </div>
 

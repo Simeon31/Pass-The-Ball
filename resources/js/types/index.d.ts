@@ -67,11 +67,16 @@ export interface PostReactions {
 export interface Comment {
     id: number;
     post_id: number;
+    parent_id: number | null;
     comment: string;
     user: User;
     created_at: string;
     updated_at: string;
     reactions: PostReactions;
+    depth: number;
+    replies?: Comment[];
+    replies_count?: number;
+    has_more_replies?: boolean;
 }
 
 export interface PostComments {

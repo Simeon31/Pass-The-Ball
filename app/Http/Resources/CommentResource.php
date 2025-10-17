@@ -35,9 +35,11 @@ class CommentResource extends JsonResource
         // Get total reactions count
         $totalReactions = $this->reactions()->count();
 
-        return [
+        // Build base response
+        $response = [
             'id' => $this->id,
             'post_id' => $this->post_id,
+            'parent_id' => $this->parent_id,
             'comment' => $this->comment,
             'user' => new UserResource($this->user),
             'created_at' => $this->created_at->toISOString(),
@@ -47,6 +49,16 @@ class CommentResource extends JsonResource
                 'total' => $totalReactions,
                 'current_user_reaction' => $currentUserReaction,
             ],
+            'depth' => $this->depth ?? 0,
         ];
+
+        // Add replies if they are loaded (for tree structure)
+        if ($this->relationLoaded('replies')) {
+            $response['replies'] = CommentResource::collection($this->replies);
+            $response['replies_count'] = $this->replies->count();
+            $response['has_more_replies'] = $this->has_more_replies ?? false;
+        }
+
+        return $response;
     }
 }
