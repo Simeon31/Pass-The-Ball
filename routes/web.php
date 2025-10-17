@@ -13,6 +13,9 @@ use Inertia\Inertia;
 Route::get('/', [WelcomeController::class, 'index'])
     ->middleware('auth', 'verified')->name('home');
 
+Route::get('/api/posts', [WelcomeController::class, 'getPosts'])
+    ->middleware('auth', 'verified')->name('posts.api');
+
 Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');

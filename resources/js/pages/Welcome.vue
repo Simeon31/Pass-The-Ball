@@ -5,11 +5,11 @@ import GroupList from '@/components/app/GroupList.vue';
 import PostList from '@/components/app/PostList.vue';
 import { useFlashMessage } from '@/composables/useFlashMessage';
 import AppLayout from '@/layouts/AppLayout.vue';
-import type { Post } from '@/types';
+import type { PaginatedData, Post } from '@/types';
 import { CheckCircleIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { Head } from '@inertiajs/vue3';
 
-defineProps<{ posts: { data: Post[] } }>();
+defineProps<{ posts: PaginatedData<Post> }>();
 
 // Using flash message composable
 const {
@@ -61,7 +61,7 @@ const {
                     </div>
                 </Transition>
                 <CreatePost />
-                <PostList :posts="posts.data" class="flex-1" />
+                <PostList :initial-posts="posts" class="flex-1" />
             </div>
         </div>
     </AppLayout>
