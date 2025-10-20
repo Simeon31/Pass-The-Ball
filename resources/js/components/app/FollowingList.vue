@@ -4,7 +4,7 @@ import FollowingListItems from './FollowingListItems.vue';
 
 <template>
     <div class="rounded border bg-white px-3 py-3">
-        <h2 class="text-xl font-bold">My Followings</h2>
+        <h2 class="text-xl font-bold">Following</h2>
         <FollowingListItems />
     </div>
 </template>

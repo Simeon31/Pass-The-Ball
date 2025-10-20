@@ -11,7 +11,10 @@ class WelcomeController extends Controller
 {
     public function index(Request $request)
     {
-        $posts = Post::query()->latest()->paginate(10);
+        $posts = Post::query()
+            ->whereNull('group_id')
+            ->latest()
+            ->paginate(10);
 
         return Inertia::render("Welcome", [
             'posts' => PostResource::collection($posts),
@@ -24,6 +27,7 @@ class WelcomeController extends Controller
         $page = $request->input('page', 1);
 
         $posts = Post::query()
+            ->whereNull('group_id') // Only show posts that are not in groups
             ->latest()
             ->with([
                 'user',

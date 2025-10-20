@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Group;
 use Illuminate\Foundation\Http\FormRequest;
 use Mews\Purifier\Facades\Purifier;
 
@@ -12,7 +13,20 @@ class StorePostRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        // If posting to a group, verify user is a member
+        if ($this->has('group_id') && $this->group_id) {
+            $group = Group::find($this->group_id);
+
+            if (!$group) {
+                return false;
+            }
+
+            // Check if user is a member of the group
+            return $group->isMember(auth()->user());
+        }
+
+        // General posts are allowed for authenticated users
+        return auth()->check();
     }
 
     /**
@@ -25,6 +39,7 @@ class StorePostRequest extends FormRequest
         return [
             'body' => ['nullable', 'string'],
             'user_id' => ['numeric', 'exists:users,id'],
+            'group_id' => ['nullable', 'numeric', 'exists:groups,id'],
             'attachments' => ['nullable', 'array', 'max:10'],
             'attachments.*' => [
                 'file',

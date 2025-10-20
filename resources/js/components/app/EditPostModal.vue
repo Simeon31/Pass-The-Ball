@@ -152,7 +152,13 @@ function removeAttachment(index: number) {
 }
 
 const handleSubmit = () => {
-    form.put(updatePost.url(props.post.id), {
+    // Use POST with _method=PUT for file uploads
+    // This is necessary because PUT requests don't support multipart/form-data properly
+    form.transform((data) => ({
+        ...data,
+        _method: 'PUT',
+    })).post(updatePost.url(props.post.id), {
+        forceFormData: true,
         onSuccess: () => {
             closeModal();
         },
@@ -196,7 +202,7 @@ const handleSubmit = () => {
                                 <div class="flex flex-col">
                                     <span class="font-semibold text-gray-900">{{
                                         post.user.name
-                                        }}</span>
+                                    }}</span>
                                 </div>
                             </div>
 

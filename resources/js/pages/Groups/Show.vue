@@ -9,6 +9,8 @@ import { Users, Settings, UserPlus, Upload, CheckCircle, XCircle, Clock } from '
 import type { Group, Post, GroupMember, PaginatedData } from '@/types';
 import PostItem from '@/components/app/PostItem.vue';
 import CreatePost from '@/components/app/CreatePost.vue';
+import { useFlashMessage } from '@/composables/useFlashMessage';
+import { CheckCircleIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 
 interface Props {
     group: Group;
@@ -28,6 +30,10 @@ const thumbnailFile = ref<File | null>(null);
 const coverSrc = computed(() => coverImageSrc.value || props.group.cover_url || '');
 const thumbnailSrc = computed(() => thumbnailImageSrc.value || props.group.thumbnail_url || '');
 
+const hasUnsavedImages = computed(() => {
+    return coverImageSrc.value !== null || thumbnailImageSrc.value !== null;
+});
+
 const canEditImages = computed(() => {
     return props.group.permissions?.includes('edit_group_images');
 });
@@ -43,6 +49,13 @@ const canInvite = computed(() => {
 const canManageRequests = computed(() => {
     return props.group.permissions?.includes('approve_join_requests');
 });
+
+// Flash message handling
+const {
+    showMessage: showSuccess,
+    message: statusMessage,
+    dismiss: dismissSuccess,
+} = useFlashMessage('status', 5000);
 
 const handleJoin = () => {
     router.post(`/groups/${props.group.slug}/join`, {}, {
@@ -92,7 +105,7 @@ const submitImages = () => {
     }
 
     router.post(`/groups/${props.group.slug}/images`, formData, {
-        preserveScroll: true,
+        forceFormData: true,
         onSuccess: () => {
             coverImageSrc.value = null;
             thumbnailImageSrc.value = null;
@@ -120,12 +133,12 @@ const cancelImages = () => {
             <div class="group relative bg-white">
                 <!-- Cover Image -->
                 <div class="relative h-64 bg-gradient-to-r from-blue-500 to-purple-600" :style="coverSrc
-                        ? `background-image: url(${coverSrc}); background-size: cover; background-position: center;`
-                        : ''
+                    ? `background-image: url(${coverSrc}); background-size: cover; background-position: center;`
+                    : ''
                     ">
                     <div v-if="canEditImages"
                         class="absolute right-4 top-4 rounded-lg bg-gray-900/70 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button v-if="!coverImageSrc"
+                        <button v-if="!hasUnsavedImages"
                             class="flex items-center gap-2 rounded-md bg-white px-3 py-2 text-sm text-gray-900 hover:bg-gray-100">
                             <Upload class="h-4 w-4" />
                             Update Cover
@@ -161,12 +174,24 @@ const cancelImages = () => {
                         </div>
                         <div v-if="canEditImages"
                             class="absolute inset-0 flex items-center justify-center rounded-xl bg-black/50 opacity-0 group-hover/thumbnail:opacity-100 transition-opacity">
-                            <button v-if="!thumbnailImageSrc"
+                            <button v-if="!hasUnsavedImages"
                                 class="relative rounded-md bg-white px-2 py-1 text-xs hover:bg-gray-100">
                                 <Upload class="h-4 w-4" />
                                 <input type="file" class="absolute inset-0 cursor-pointer opacity-0" accept="image/*"
                                     @change="onThumbnailChange" />
                             </button>
+                            <div v-else class="flex flex-col gap-2">
+                                <button @click="cancelImages"
+                                    class="flex items-center justify-center gap-1 rounded-md bg-white px-2 py-1 text-xs hover:bg-gray-100">
+                                    <XCircle class="h-3 w-3" />
+                                    Cancel
+                                </button>
+                                <button @click="submitImages"
+                                    class="flex items-center justify-center gap-1 rounded-md bg-green-600 px-2 py-1 text-xs text-white hover:bg-green-700">
+                                    <CheckCircle class="h-3 w-3" />
+                                    Save
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -263,63 +288,114 @@ const cancelImages = () => {
                     </TabList>
 
                     <TabPanels class="bg-gray-50 p-6">
-                        <!-- Posts Tab -->
-                        <TabPanel>
-                            <div v-if="group.is_member" class="space-y-4">
-                                <CreatePost v-if="canPost" :groupId="group.id" />
-                                <div v-if="posts && posts.data.length > 0" class="space-y-4">
-                                    <PostItem v-for="post in posts.data" :key="post.id" :post="post" />
-                                </div>
-                                <div v-else class="rounded-lg bg-white p-8 text-center">
-                                    <p class="text-gray-600">No posts yet. Be the first to post!</p>
+                        <!-- Success Flash Message -->
+                        <Transition enter-active-class="transition ease-out duration-300"
+                            enter-from-class="opacity-0 transform translate-y-2"
+                            enter-to-class="opacity-100 transform translate-y-0"
+                            leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100"
+                            leave-to-class="opacity-0">
+                            <div v-if="statusMessage() && showSuccess"
+                                class="mb-4 rounded-lg border border-green-200 bg-green-50 p-4">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <CheckCircleIcon class="mr-2 h-5 w-5 text-green-600" />
+                                        <p class="text-sm font-medium text-green-800">
+                                            {{ statusMessage() }}
+                                        </p>
+                                    </div>
+                                    <button @click="dismissSuccess" class="text-green-600 hover:text-green-800">
+                                        <XMarkIcon class="h-5 w-5" />
+                                    </button>
                                 </div>
                             </div>
-                            <div v-else class="rounded-lg bg-white p-8 text-center">
-                                <Users class="mx-auto h-12 w-12 text-gray-400" />
-                                <p class="mt-4 text-gray-600">Join this group to see posts</p>
+                        </Transition>
+
+                        <!-- Posts Tab -->
+                        <TabPanel>
+                            <div class="w-full h-full relative size-32 ...">
+                                <div class="absolute inset-y-0 right-0 w-[300px] ">
+                                    <Card class="p-6">
+                                        <h3 class="mb-4 text-lg font-semibold">About This Group</h3>
+                                        <p v-if="group.about" class="whitespace-pre-wrap text-gray-700">
+                                            {{ group.about }}
+                                        </p>
+                                        <p v-else class="italic text-gray-500">No description provided</p>
+                                    </Card>
+                                </div>
+                            </div>
+
+
+
+                            <div class="mx-auto max-w-3xl">
+                                <div v-if="group.is_member" class="space-y-4">
+                                    <CreatePost v-if="canPost" :groupId="group.id" />
+                                    <div v-if="posts && posts.data.length > 0" class="space-y-4">
+                                        <PostItem v-for="post in posts.data" :key="post.id" :post="post" />
+                                    </div>
+                                    <div v-else class="rounded-lg bg-white p-8 text-center">
+                                        <p class="text-gray-600">No posts yet. Be the first to post!</p>
+                                    </div>
+                                </div>
+                                <div v-else class="rounded-lg bg-white p-8 text-center">
+                                    <Users class="mx-auto h-12 w-12 text-gray-400" />
+                                    <p class="mt-4 text-gray-600">Join this group to see posts</p>
+                                </div>
                             </div>
                         </TabPanel>
 
                         <!-- About Tab -->
                         <TabPanel>
-                            <Card class="p-6">
-                                <h3 class="text-lg font-semibold mb-4">About This Group</h3>
-                                <p v-if="group.about" class="text-gray-700 whitespace-pre-wrap">
-                                    {{ group.about }}
-                                </p>
-                                <p v-else class="text-gray-500 italic">No description provided</p>
-                            </Card>
+                            <div class="mx-auto max-w-3xl">
+                                <Card class="p-6">
+                                    <h3 class="mb-4 text-lg font-semibold">About This Group</h3>
+                                    <p v-if="group.about" class="whitespace-pre-wrap text-gray-700">
+                                        {{ group.about }}
+                                    </p>
+                                    <p v-else class="italic text-gray-500">No description provided</p>
+                                </Card>
+                            </div>
                         </TabPanel>
 
                         <!-- Members Tab -->
                         <TabPanel>
-                            <Card class="p-6">
-                                <h3 class="text-lg font-semibold mb-4">Members ({{ group.member_count || 0 }})</h3>
-                                <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                    <div v-for="member in members" :key="member.id"
-                                        class="flex items-center gap-3 rounded-lg border p-3">
-                                        <img v-if="member.user.profile_picture_url"
-                                            :src="member.user.profile_picture_url" :alt="member.user.name"
-                                            class="h-10 w-10 rounded-full object-cover" />
-                                        <div v-else
-                                            class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200">
-                                            <Users class="h-5 w-5 text-gray-600" />
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="font-medium text-sm truncate">{{ member.user.name }}</p>
-                                            <p class="text-xs text-gray-500 capitalize">{{ member.role }}</p>
+                            <div class="mx-auto max-w-5xl">
+                                <Card class="p-6">
+                                    <h3 class="mb-4 text-lg font-semibold">Members ({{ group.member_count || 0 }})</h3>
+                                    <div v-if="members && members.length > 0"
+                                        class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                        <div v-for="member in members" :key="member.id"
+                                            class="flex items-center gap-3 rounded-lg border p-3">
+                                            <img v-if="member.user?.profile_picture_url"
+                                                :src="member.user.profile_picture_url"
+                                                :alt="member.user?.name || 'Member'"
+                                                class="h-10 w-10 rounded-full object-cover" />
+                                            <div v-else
+                                                class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200">
+                                                <Users class="h-5 w-5 text-gray-600" />
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <p class="truncate text-sm font-medium">{{ member.user?.name ||
+                                                    'Unknown' }}
+                                                </p>
+                                                <p class="text-xs capitalize text-gray-500">{{ member.role }}</p>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </Card>
+                                    <div v-else class="text-sm text-gray-500 text-center py-4">
+                                        No members to display
+                                    </div>
+                                </Card>
+                            </div>
                         </TabPanel>
 
                         <!-- Requests Tab -->
                         <TabPanel v-if="canManageRequests">
-                            <Card class="p-6">
-                                <h3 class="text-lg font-semibold mb-4">Pending Join Requests</h3>
-                                <p class="text-gray-600">Manage join requests here</p>
-                            </Card>
+                            <div class="mx-auto max-w-3xl">
+                                <Card class="p-6">
+                                    <h3 class="mb-4 text-lg font-semibold">Pending Join Requests</h3>
+                                    <p class="text-gray-600">Manage join requests here</p>
+                                </Card>
+                            </div>
                         </TabPanel>
                     </TabPanels>
                 </TabGroup>

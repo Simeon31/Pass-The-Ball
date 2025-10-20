@@ -248,8 +248,7 @@ class GroupController extends Controller
 
         $group->save();
 
-        return redirect()->route('groups.show', $group->slug)
-            ->with('status', 'Group images updated successfully!');
+        return back()->with('status', 'Group image updated successfully!');
     }
 
     /**

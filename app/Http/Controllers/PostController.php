@@ -23,6 +23,7 @@ class PostController extends Controller
         $post = Post::create([
             'user_id' => $data['user_id'],
             'body' => $data['body'] ?? null,
+            'group_id' => $data['group_id'] ?? null,
         ]);
 
         // Handle attachments if present
