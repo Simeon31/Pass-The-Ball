@@ -17,6 +17,7 @@ import AttachmentPreview from './AttachmentPreview.vue';
 
 const props = defineProps<{
     isOpen: boolean;
+    groupId?: number;
 }>();
 
 const emit = defineEmits<{
@@ -25,6 +26,7 @@ const emit = defineEmits<{
 
 const newPostForm = useForm({
     body: '',
+    group_id: props.groupId,
     attachments: [] as File[],
 });
 

@@ -68,4 +68,40 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(Post::class);
     }
+
+    /**
+     * Get the groups owned by the user.
+     */
+    public function ownedGroups()
+    {
+        return $this->hasMany(Group::class);
+    }
+
+    /**
+     * Get the groups that the user is a member of.
+     */
+    public function groups()
+    {
+        return $this->belongsToMany(Group::class, 'group_users')
+            ->withPivot(['status', 'role', 'created_at'])
+            ->wherePivot('status', 'approved');
+    }
+
+    /**
+     * Get pending group join requests for the user.
+     */
+    public function pendingGroupRequests()
+    {
+        return $this->belongsToMany(Group::class, 'group_users')
+            ->withPivot(['status', 'role', 'created_at'])
+            ->wherePivot('status', 'pending');
+    }
+
+    /**
+     * Get group invitations for the user.
+     */
+    public function groupInvitations()
+    {
+        return $this->hasMany(GroupInvitation::class);
+    }
 }

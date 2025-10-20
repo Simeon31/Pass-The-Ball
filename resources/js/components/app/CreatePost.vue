@@ -3,6 +3,12 @@ import { usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import CreatePostModal from './CreatePostModal.vue';
 
+interface Props {
+    groupId?: number;
+}
+
+const props = defineProps<Props>();
+
 const page = usePage();
 const user = computed(() => page.props.auth.user);
 
@@ -27,5 +33,5 @@ function openModal() {
     </div>
 
     <!-- Create Post Modal -->
-    <CreatePostModal :is-open="isModalOpen" @update:is-open="isModalOpen = $event" />
+    <CreatePostModal :is-open="isModalOpen" :group-id="groupId" @update:is-open="isModalOpen = $event" />
 </template>

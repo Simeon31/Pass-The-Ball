@@ -72,5 +72,37 @@ Route::put('/comment/{comment}', [CommentController::class, 'update'])
 Route::delete('/comment/{comment}', [CommentController::class, 'destroy'])
     ->middleware(['auth', 'verified'])->name('comment.destroy');
 
+// Groups
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Group Discovery & Listing
+    Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
+    Route::get('/groups/create', [GroupController::class, 'create'])->name('groups.create');
+    Route::post('/groups', [GroupController::class, 'store'])->name('groups.store');
+
+    // Group Profile & Details
+    Route::get('/groups/{group}', [GroupController::class, 'show'])->name('groups.show');
+    Route::get('/groups/{group}/edit', [GroupController::class, 'edit'])->name('groups.edit');
+    Route::put('/groups/{group}', [GroupController::class, 'update'])->name('groups.update');
+    Route::delete('/groups/{group}', [GroupController::class, 'destroy'])->name('groups.destroy');
+
+    // Group Images
+    Route::post('/groups/{group}/images', [GroupController::class, 'updateImages'])->name('groups.updateImages');
+
+    // Group Members
+    Route::get('/groups/{group}/members', [GroupController::class, 'members'])->name('groups.members');
+    Route::post('/groups/{group}/invite', [GroupController::class, 'inviteMember'])->name('groups.invite');
+
+    // Join/Leave Group
+    Route::post('/groups/{group}/join', [GroupController::class, 'join'])->name('groups.join');
+    Route::post('/groups/{group}/leave', [GroupController::class, 'leave'])->name('groups.leave');
+
+    // Group Invitations
+    Route::post('/groups/invitations/{token}/respond', [GroupController::class, 'respondToInvitation'])->name('groups.invitations.respond');
+
+    // Admin: Pending Join Requests
+    Route::get('/groups/{group}/admin/requests', [GroupController::class, 'pendingRequests'])->name('groups.admin.requests');
+    Route::post('/groups/{group}/admin/approve', [GroupController::class, 'approveRequest'])->name('groups.admin.approve');
+});
+
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
