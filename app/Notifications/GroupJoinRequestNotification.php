@@ -9,7 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class GroupJoinRequestNotification extends Notification implements ShouldQueue
+class GroupJoinRequestNotification extends Notification // Removed ShouldQueue to send immediately
 {
     use Queueable;
 
@@ -65,6 +65,8 @@ class GroupJoinRequestNotification extends Notification implements ShouldQueue
             'requester_id' => $this->requester->id,
             'requester_name' => $this->requester->name,
             'requester_username' => $this->requester->username,
+            'action_url' => '/groups/' . $this->group->slug . '/admin/requests', // Relative path for Inertia.js router
+            'message' => "{$this->requester->name} requested to join {$this->group->name}",
         ];
     }
 

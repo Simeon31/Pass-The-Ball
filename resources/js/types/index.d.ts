@@ -89,6 +89,30 @@ export interface GroupInvitation {
     created_at: string;
 }
 
+export type NotificationCategory = 'invitation' | 'join_request' | 'comment' | 'reaction' | 'follow' | 'general';
+
+export interface Notification {
+    id: string;
+    type: string;
+    category: NotificationCategory;
+    data: {
+        message?: string;
+        action_url?: string;
+        [key: string]: any;
+    };
+    read_at: string | null;
+    created_at: string;
+    time_ago: string;
+}
+
+export interface NotificationCounts {
+    all: number;
+    unread: number;
+    invitations: number;
+    posts: number;
+    groups: number;
+}
+
 export interface PostAttachment {
     id: number;
     name: string;

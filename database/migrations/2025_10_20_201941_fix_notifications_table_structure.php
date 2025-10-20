@@ -10,6 +10,10 @@ return new class extends Migration {
      */
     public function up(): void
     {
+        // Drop the existing table with wrong structure
+        Schema::dropIfExists('notifications');
+
+        // Recreate with proper Laravel notification structure
         Schema::create('notifications', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('type');
@@ -26,5 +30,11 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::dropIfExists('notifications');
+
+        // Recreate old structure if needed
+        Schema::create('notifications', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
+        });
     }
 };

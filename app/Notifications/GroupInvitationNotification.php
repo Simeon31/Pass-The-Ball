@@ -8,7 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class GroupInvitationNotification extends Notification implements ShouldQueue
+class GroupInvitationNotification extends Notification // Removed ShouldQueue to send immediately
 {
     use Queueable;
 
@@ -44,7 +44,8 @@ class GroupInvitationNotification extends Notification implements ShouldQueue
             ->greeting("Hello {$notifiable->name}!")
             ->line("{$inviterName} has invited you to join the group \"{$groupName}\".")
             ->line($this->invitation->group->about ?? 'Join this group to connect with other members.')
-            ->action('Accept Invitation', $acceptUrl)
+            ->action('Accept & Join Group', $acceptUrl)
+            ->line('Clicking the button above will instantly add you to the group.')
             ->line('This invitation will expire on ' . $this->invitation->token_expires_at->format('F j, Y'))
             ->line('If you did not expect this invitation, you can safely ignore this email.');
     }
@@ -66,6 +67,8 @@ class GroupInvitationNotification extends Notification implements ShouldQueue
             'inviter_name' => $this->invitation->inviter->name,
             'token' => $this->invitation->token,
             'expires_at' => $this->invitation->token_expires_at->toISOString(),
+            'action_url' => '/groups/invitations', // Relative path for Inertia.js router
+            'message' => "{$this->invitation->inviter->name} invited you to join {$this->invitation->group->name}",
         ];
     }
 

@@ -40,4 +40,30 @@ class ProfileController extends Controller
             'posts' => $posts,
         ]);
     }
+
+    /**
+     * Search for users (API endpoint for invitations).
+     */
+    public function search(Request $request)
+    {
+        $query = $request->input('q', '');
+        $limit = $request->input('limit', 10);
+
+        if (strlen($query) < 2) {
+            return response()->json(['users' => []]);
+        }
+
+        $users = User::where(function ($q) use ($query) {
+            $q->where('name', 'like', "%{$query}%")
+                ->orWhere('username', 'like', "%{$query}%")
+                ->orWhere('email', 'like', "%{$query}%");
+        })
+            ->where('id', '!=', auth()->id()) // Exclude current user
+            ->limit($limit)
+            ->get();
+
+        return response()->json([
+            'users' => UserResource::collection($users),
+        ]);
+    }
 }

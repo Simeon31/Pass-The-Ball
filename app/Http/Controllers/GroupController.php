@@ -293,6 +293,38 @@ class GroupController extends Controller
     }
 
     /**
+     * Accept invitation directly from email link (one-click acceptance).
+     * This route is accessible to authenticated users only (via auth middleware).
+     */
+    public function acceptInvitationFromEmail(string $token): RedirectResponse
+    {
+        $invitation = $this->invitationService->findByToken($token);
+
+        if (!$invitation) {
+            return redirect()->route('groups.index')
+                ->withErrors(['invitation' => 'Invalid invitation token.']);
+        }
+
+        if (!$invitation->isValid()) {
+            return redirect()->route('groups.index')
+                ->withErrors(['invitation' => 'This invitation has expired or has already been used.']);
+        }
+
+        // Check if user is authorized
+        if ($invitation->user_id !== auth()->id()) {
+            return redirect()->route('groups.index')
+                ->withErrors(['invitation' => 'This invitation is not for your account. Please log in with the correct account.']);
+        }
+
+        // Auto-accept the invitation from email
+        $this->invitationService->acceptInvitation($invitation);
+
+        // Redirect to group page with success message
+        return redirect()->route('groups.show', $invitation->group->slug)
+            ->with('status', 'You have successfully joined the group!');
+    }
+
+    /**
      * Respond to a group invitation.
      */
     public function respondToInvitation(Request $request, string $token): RedirectResponse
@@ -454,4 +486,20 @@ class GroupController extends Controller
         return redirect()->route('groups.index')
             ->with('status', 'You have left the group.');
     }
+
+    /**
+     * Display user's group invitations.
+     */
+    public function invitations(): Response
+    {
+        $user = auth()->user();
+
+        $invitations = $this->invitationService->getPendingInvitationsForUser($user);
+
+        return Inertia::render('Groups/Invitations', [
+            'invitations' => GroupInvitationResource::collection($invitations),
+        ]);
+    }
 }
+
+

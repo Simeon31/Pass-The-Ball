@@ -5,10 +5,11 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { TabGroup, TabList, Tab, TabPanels, TabPanel } from '@headlessui/vue';
-import { Users, Settings, UserPlus, Upload, CheckCircle, XCircle, Clock } from 'lucide-vue-next';
+import { Users, Settings, UserPlus, Upload, CheckCircle, XCircle, Clock, Bell } from 'lucide-vue-next';
 import type { Group, Post, GroupMember, PaginatedData } from '@/types';
 import PostItem from '@/components/app/PostItem.vue';
 import CreatePost from '@/components/app/CreatePost.vue';
+import InviteMembersModal from '@/components/app/InviteMembersModal.vue';
 import { useFlashMessage } from '@/composables/useFlashMessage';
 import { CheckCircleIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 
@@ -26,6 +27,7 @@ const coverImageSrc = ref<string | null>(null);
 const thumbnailImageSrc = ref<string | null>(null);
 const coverFile = ref<File | null>(null);
 const thumbnailFile = ref<File | null>(null);
+const showInviteModal = ref(false);
 
 const coverSrc = computed(() => coverImageSrc.value || props.group.cover_url || '');
 const thumbnailSrc = computed(() => thumbnailImageSrc.value || props.group.thumbnail_url || '');
@@ -69,6 +71,10 @@ const handleLeave = () => {
             preserveScroll: true,
         });
     }
+};
+
+const openInviteModal = () => {
+    showInviteModal.value = true;
 };
 
 const onCoverChange = (event: Event) => {
@@ -219,10 +225,23 @@ const cancelImages = () => {
                             </Button>
 
                             <!-- Invite Button -->
-                            <Button v-if="canInvite" variant="outline">
+                            <Button v-if="canInvite" variant="outline" @click="openInviteModal">
                                 <UserPlus class="mr-2 h-4 w-4" />
                                 Invite
                             </Button>
+
+                            <!-- Manage Requests Button -->
+                            <Link v-if="canManageRequests && pendingRequestsCount && pendingRequestsCount > 0"
+                                :href="`/groups/${group.slug}/admin/requests`">
+                            <Button variant="outline">
+                                <Bell class="mr-2 h-4 w-4" />
+                                Requests
+                                <span
+                                    class="ml-2 inline-flex items-center justify-center rounded-full bg-red-600 px-2 py-0.5 text-xs font-bold text-white">
+                                    {{ pendingRequestsCount }}
+                                </span>
+                            </Button>
+                            </Link>
 
                             <!-- Settings Button -->
                             <Link v-if="group.is_owner" :href="`/groups/${group.slug}/edit`">
@@ -235,6 +254,9 @@ const cancelImages = () => {
                     </div>
                 </div>
             </div>
+
+            <!-- Invite Members Modal -->
+            <InviteMembersModal v-model:isOpen="showInviteModal" :group="group" />
 
             <!-- Tabs -->
             <div class="border-t">

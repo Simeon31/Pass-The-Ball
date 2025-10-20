@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\GroupController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostReactionController;
 use App\Http\Controllers\ReactionController;
@@ -15,6 +16,9 @@ Route::get('/', [WelcomeController::class, 'index'])
 
 Route::get('/api/posts', [WelcomeController::class, 'getPosts'])
     ->middleware('auth', 'verified')->name('posts.api');
+
+Route::get('/api/users/search', [ProfileController::class, 'search'])
+    ->middleware('auth', 'verified')->name('users.search');
 
 Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
@@ -72,12 +76,26 @@ Route::put('/comment/{comment}', [CommentController::class, 'update'])
 Route::delete('/comment/{comment}', [CommentController::class, 'destroy'])
     ->middleware(['auth', 'verified'])->name('comment.destroy');
 
+// Notifications
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+    Route::post('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.markAllAsRead');
+    Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+    Route::delete('/notifications/delete-read', [NotificationController::class, 'deleteRead'])->name('notifications.deleteRead');
+});
+
 // Groups
 Route::middleware(['auth', 'verified'])->group(function () {
     // Group Discovery & Listing
     Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
     Route::get('/groups/create', [GroupController::class, 'create'])->name('groups.create');
     Route::post('/groups', [GroupController::class, 'store'])->name('groups.store');
+
+    // Group Invitations (must be before /groups/{group} to avoid route collision)
+    Route::get('/groups/invitations', [GroupController::class, 'invitations'])->name('groups.invitations');
+    Route::get('/groups/invitations/{token}/accept', [GroupController::class, 'acceptInvitationFromEmail'])->name('groups.invitations.accept');
+    Route::post('/groups/invitations/{token}/respond', [GroupController::class, 'respondToInvitation'])->name('groups.invitations.respond');
 
     // Group Profile & Details
     Route::get('/groups/{group}', [GroupController::class, 'show'])->name('groups.show');
@@ -95,9 +113,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Join/Leave Group
     Route::post('/groups/{group}/join', [GroupController::class, 'join'])->name('groups.join');
     Route::post('/groups/{group}/leave', [GroupController::class, 'leave'])->name('groups.leave');
-
-    // Group Invitations
-    Route::post('/groups/invitations/{token}/respond', [GroupController::class, 'respondToInvitation'])->name('groups.invitations.respond');
 
     // Admin: Pending Join Requests
     Route::get('/groups/{group}/admin/requests', [GroupController::class, 'pendingRequests'])->name('groups.admin.requests');
