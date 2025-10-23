@@ -5,11 +5,14 @@ import GroupList from '@/components/app/GroupList.vue';
 import PostList from '@/components/app/PostList.vue';
 import { useFlashMessage } from '@/composables/useFlashMessage';
 import AppLayout from '@/layouts/AppLayout.vue';
-import type { PaginatedData, Post } from '@/types';
+import type { PaginatedData, Post, Group } from '@/types';
 import { CheckCircleIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { Head } from '@inertiajs/vue3';
 
-defineProps<{ posts: PaginatedData<Post> }>();
+defineProps<{
+    posts: PaginatedData<Post>;
+    groups: Group[];
+}>();
 
 // Using flash message composable
 const {
@@ -30,7 +33,7 @@ const {
         <div class="grid h-screen gap-3 p-4 lg:grid-cols-12">
             <div class="h-full overflow-y-auto lg:order-first lg:col-span-3">
                 <div class="h-[400px] overflow-y-auto">
-                    <GroupList />
+                    <GroupList :groups="groups" />
                 </div>
             </div>
             <div class="h-full overflow-y-auto lg:order-last lg:col-span-3">

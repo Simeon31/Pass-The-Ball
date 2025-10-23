@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\GroupResource;
 use App\Http\Resources\PostResource;
+use App\Models\Group;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,8 +18,19 @@ class WelcomeController extends Controller
             ->latest()
             ->paginate(10);
 
+        // Fetch user's groups (groups where user is a member)
+        $groups = Group::whereHas('members', function ($query) use ($request) {
+            $query->where('user_id', $request->user()->id);
+        })
+            ->with('owner')
+            ->withCount('members')
+            ->latest()
+            ->take(10) // Limit to 10 groups for sidebar
+            ->get();
+
         return Inertia::render("Welcome", [
             'posts' => PostResource::collection($posts),
+            'groups' => GroupResource::collection($groups),
         ]);
     }
 

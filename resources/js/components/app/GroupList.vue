@@ -2,6 +2,13 @@
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue';
 import { ref } from 'vue';
 import GroupListItems from './GroupListItems.vue';
+import type { Group } from '@/types';
+
+interface Props {
+    groups: Group[];
+}
+
+defineProps<Props>();
 
 const seachKeyword = ref('');
 </script>
@@ -14,13 +21,13 @@ const seachKeyword = ref('');
                     <h2 class="text-xl font-bold">My groups</h2>
                 </DisclosureButton>
                 <DisclosurePanel>
-                    <GroupListItems />
+                    <GroupListItems :groups="groups" />
                 </DisclosurePanel>
             </Disclosure>
         </div>
         <div class="flex hidden flex-col overflow-hidden lg:block lg:h-full">
             <h2 class="text-xl font-bold">My groups</h2>
-            <GroupListItems />
+            <GroupListItems :groups="groups" />
         </div>
     </div>
 </template>
