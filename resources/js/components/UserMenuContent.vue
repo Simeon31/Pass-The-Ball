@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { show } from '@/actions/App/Http/Controllers/ProfileController';
+import { show } from '@/routes/profile';
 import UserInfo from '@/components/UserInfo.vue';
 import {
     DropdownMenuGroup,

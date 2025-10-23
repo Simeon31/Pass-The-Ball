@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { TabGroup, TabList, Tab, TabPanels, TabPanel } from '@headlessui/vue';
-import { Users, Settings, UserPlus, Upload, CheckCircle, XCircle, Clock, Bell, UserCheck, UserX } from 'lucide-vue-next';
+import { Users, Settings, UserPlus, Upload, CheckCircle, XCircle, Clock, Bell, UserCheck, UserX, Trash2 } from 'lucide-vue-next';
 import type { Group, Post, GroupMember, PaginatedData } from '@/types';
 import PostItem from '@/components/app/PostItem.vue';
 import CreatePost from '@/components/app/CreatePost.vue';
@@ -183,6 +183,20 @@ const handleReject = (userId: number) => {
                 },
             }
         );
+    }
+};
+
+const handleRemoveMember = (userId: number, userName: string) => {
+    if (confirm(`Are you sure you want to remove ${userName} from this group?`)) {
+        router.delete(`/groups/${props.group.slug}/members/${userId}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                console.log('Member removed successfully');
+            },
+            onError: (errors) => {
+                console.error('Failed to remove member:', errors);
+            },
+        });
     }
 };
 
@@ -483,7 +497,7 @@ const formatDate = (dateString: string) => {
                                                 <p class="truncate text-sm font-medium">{{ member.user?.name ||
                                                     'Unknown' }}
                                                 </p>
-                                                <div class="mt-1">
+                                                <div class="mt-1 flex items-center gap-2">
                                                     <RoleSelector v-if="canChangeRoles && member.user?.id"
                                                         :current-role="member.role" :member-id="member.user.id"
                                                         :group-slug="group.slug"
@@ -491,6 +505,12 @@ const formatDate = (dateString: string) => {
                                                     <Badge v-else variant="outline" class="text-xs capitalize">
                                                         {{ member.role }}
                                                     </Badge>
+                                                    <Button v-if="member.can_remove" variant="ghost" size="sm"
+                                                        class="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                        @click="handleRemoveMember(member.user.id, member.user.name)"
+                                                        title="Remove member">
+                                                        <Trash2 class="h-4 w-4" />
+                                                    </Button>
                                                 </div>
                                             </div>
                                         </div>

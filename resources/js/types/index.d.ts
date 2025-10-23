@@ -75,6 +75,7 @@ export interface GroupMember {
     role: GroupRole;
     status: 'pending' | 'approved' | 'rejected';
     joined_at: string;
+    can_remove?: boolean;
 }
 
 export interface GroupInvitation {

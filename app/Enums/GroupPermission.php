@@ -53,6 +53,7 @@ enum GroupPermission: string
                 self::POST_IN_GROUP,
                 self::INVITE_MEMBERS,
                 self::APPROVE_JOIN_REQUESTS,
+                self::REMOVE_MEMBERS,
                 self::MODERATE_POSTS,
             ],
             GroupRole::MEMBER => [

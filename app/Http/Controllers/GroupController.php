@@ -6,6 +6,7 @@ use App\Enums\GroupRole;
 use App\Http\Requests\Group\ApproveJoinRequestRequest;
 use App\Http\Requests\Group\InviteMemberRequest;
 use App\Http\Requests\Group\JoinGroupRequest;
+use App\Http\Requests\Group\RemoveMemberRequest;
 use App\Http\Requests\Group\StoreGroupRequest;
 use App\Http\Requests\Group\UpdateGroupImagesRequest;
 use App\Http\Requests\Group\UpdateGroupRequest;
@@ -21,6 +22,7 @@ use App\Notifications\GroupInvitationNotification;
 use App\Notifications\GroupJoinApprovedNotification;
 use App\Notifications\GroupJoinRejectedNotification;
 use App\Notifications\GroupJoinRequestNotification;
+use App\Notifications\GroupMemberRemovedNotification;
 use App\Services\GroupInvitationService;
 use App\Services\GroupPermissionService;
 use Illuminate\Http\RedirectResponse;
@@ -140,7 +142,10 @@ class GroupController extends Controller
                 ->withPivot(['created_at'])
                 ->get();
             $pendingRequestsCount = $pendingRequestsData->count();
-            $pendingRequests = GroupMemberResource::collection($pendingRequestsData);
+            $pendingRequests = $pendingRequestsData->map(
+                fn($member) =>
+                (new GroupMemberResource($member))->withGroup($group)
+            );
         }
 
         // Check if user has a pending join request
@@ -154,7 +159,10 @@ class GroupController extends Controller
         return Inertia::render('Groups/Show', [
             'group' => new GroupResource($group),
             'posts' => $posts,
-            'members' => GroupMemberResource::collection($group->members),
+            'members' => $group->members->map(
+                fn($member) =>
+                (new GroupMemberResource($member))->withGroup($group)
+            ),
             'pendingRequestsCount' => $pendingRequestsCount,
             'pendingRequests' => $pendingRequests,
             'hasPendingRequest' => $hasPendingRequest,
@@ -275,7 +283,10 @@ class GroupController extends Controller
 
         return Inertia::render('Groups/Members', [
             'group' => new GroupResource($group),
-            'members' => GroupMemberResource::collection($members),
+            'members' => $members->through(
+                fn($member) =>
+                (new GroupMemberResource($member))->withGroup($group)
+            ),
         ]);
     }
 
@@ -572,6 +583,49 @@ class GroupController extends Controller
         ]);
 
         return back()->with('status', "Successfully updated {$user->name}'s role to {$newRoleEnum->label()}.");
+    }
+
+    /**
+     * Remove a member from the group.
+     */
+    public function removeMember(RemoveMemberRequest $request, Group $group, User $user): RedirectResponse
+    {
+        $this->authorize('removeMembers', $group);
+
+        // Validate that the user is a member of the group
+        if (!$group->isMember($user)) {
+            return back()->withErrors(['user' => 'This user is not a member of the group.']);
+        }
+
+        // Prevent removing the owner
+        if ($group->isOwner($user)) {
+            return back()->withErrors(['user' => 'Cannot remove the group owner.']);
+        }
+
+        $currentUser = auth()->user();
+
+        // Prevent users from removing themselves
+        if ($currentUser->id === $user->id) {
+            return back()->withErrors(['user' => 'You cannot remove yourself. Please use the leave group option instead.']);
+        }
+
+        $targetRole = $group->getUserRole($user);
+
+        // Only owner and admins can remove other admins
+        if ($targetRole === GroupRole::ADMIN->value && !$group->isOwner($currentUser)) {
+            $currentRole = $group->getUserRole($currentUser);
+            if ($currentRole !== GroupRole::ADMIN->value) {
+                return back()->withErrors(['user' => 'Only admins or the owner can remove other admins.']);
+            }
+        }
+
+        // Remove the member from the group
+        $group->allUsers()->detach($user->id);
+
+        // Send notification to the removed user
+        $user->notify(new GroupMemberRemovedNotification($group, $currentUser));
+
+        return back()->with('status', "Successfully removed {$user->name} from the group.");
     }
 }
 

@@ -123,6 +123,10 @@ const handleClick = () => {
                         <p class="text-sm" :class="isUnread ? 'font-semibold' : 'font-normal'">
                             {{ notification.data.message }}
                         </p>
+                        <!-- Description (if available) -->
+                        <p v-if="notification.data.description" class="text-muted-foreground mt-2 text-sm">
+                            {{ notification.data.description }}
+                        </p>
                         <p class="text-muted-foreground mt-1 text-xs">
                             {{ notification.time_ago }}
                         </p>
@@ -136,7 +140,8 @@ const handleClick = () => {
 
                 <!-- Actions -->
                 <div class="flex gap-2">
-                    <Button v-if="notification.data.action_url" size="sm" variant="default" @click="handleClick">
+                    <Button v-if="notification.data.action_url && notification.data.action_url !== '/notifications'"
+                        size="sm" variant="default" @click="handleClick">
                         View
                     </Button>
                     <Button v-if="isUnread" size="sm" variant="outline" @click="handleMarkAsRead">

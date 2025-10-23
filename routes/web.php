@@ -110,6 +110,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/groups/{group}/members', [GroupController::class, 'members'])->name('groups.members');
     Route::post('/groups/{group}/invite', [GroupController::class, 'inviteMember'])->name('groups.invite');
     Route::post('/groups/{group}/members/{user}/role', [GroupController::class, 'updateMemberRole'])->name('groups.members.updateRole');
+    Route::delete('/groups/{group}/members/{user}', [GroupController::class, 'removeMember'])->name('groups.members.remove');
 
     // Join/Leave Group
     Route::post('/groups/{group}/join', [GroupController::class, 'join'])->name('groups.join');
