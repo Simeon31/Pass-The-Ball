@@ -101,10 +101,8 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
-        // Authorization check
-        if (auth()->id() !== $post->user_id) {
-            abort(403, 'Unauthorized action.');
-        }
+        // Authorization check using policy
+        $this->authorize('delete', $post);
 
         $post->delete();
 

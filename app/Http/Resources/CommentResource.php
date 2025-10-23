@@ -50,6 +50,7 @@ class CommentResource extends JsonResource
                 'current_user_reaction' => $currentUserReaction,
             ],
             'depth' => $this->depth ?? 0,
+            'can_delete' => $request->user() ? $request->user()->can('delete', $this->resource) : false,
         ];
 
         // Add replies if they are loaded (for tree structure)

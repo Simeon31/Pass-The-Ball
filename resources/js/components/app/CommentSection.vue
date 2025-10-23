@@ -138,11 +138,6 @@ const updateComment = async (commentId: number, commentText: string) => {
     }
 };
 
-const canDeleteComment = (comment: Comment) => {
-    // User can delete their own comment or if they own the post
-    return authUser.value.id === comment.user.id;
-};
-
 // Method to add comment from external source (WebSocket)
 // Returns true if comment was added, false if it was a duplicate
 const addCommentFromBroadcast = (comment: Comment): boolean => {
@@ -211,7 +206,7 @@ defineExpose({
         <!-- Comments Tree -->
         <div v-if="localComments.length > 0" class="space-y-1">
             <CommentItem v-for="comment in localComments" :key="comment.id" :comment="comment"
-                :can-delete="canDeleteComment(comment)" :post-id="postId" @delete="deleteComment(comment.id)"
+                :can-delete="comment.can_delete" :post-id="postId" @delete="deleteComment(comment.id)"
                 @update="(commentText) => updateComment(comment.id, commentText)" />
         </div>
 

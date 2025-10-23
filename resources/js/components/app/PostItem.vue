@@ -20,8 +20,8 @@ const props = defineProps<{
 const page = usePage();
 const authUser = computed(() => page.props.auth.user);
 
-// Checking if the current user owns this post
-const canManagePost = computed(() => authUser.value.id === props.post.user.id);
+// Checking if the current user can delete this post (owner or group admin)
+const canManagePost = computed(() => props.post.can_delete ?? false);
 
 // Modal states
 const isEditModalOpen = ref(false);
@@ -178,7 +178,7 @@ defineExpose({
                 </template>
                 <span class="mt-1 text-xs text-gray-400">{{
                     post.created_at
-                }}</span>
+                    }}</span>
             </div>
 
             <!-- Post Menu (only shown to post owner) -->

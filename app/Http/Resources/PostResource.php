@@ -61,6 +61,7 @@ class PostResource extends JsonResource
                 'data' => $latestComments,
                 'total' => $totalComments,
             ],
+            'can_delete' => $request->user() ? $request->user()->can('delete', $this->resource) : false,
         ];
     }
 }

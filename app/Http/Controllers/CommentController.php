@@ -145,10 +145,8 @@ class CommentController extends Controller
      */
     public function destroy(Comment $comment)
     {
-        // Check if user owns the comment or the post
-        if (auth()->id() !== $comment->user_id && auth()->id() !== $comment->post->user_id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+        // Authorization check using policy
+        $this->authorize('delete', $comment);
 
         // Get count of descendants for feedback
         $stats = $this->treeService->getThreadStats($comment);

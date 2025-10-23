@@ -145,6 +145,7 @@ export interface Comment {
     updated_at: string;
     reactions: PostReactions;
     depth: number;
+    can_delete?: boolean;
     replies?: Comment[];
     replies_count?: number;
     has_more_replies?: boolean;
@@ -165,6 +166,7 @@ export interface Post {
     attachments: PostAttachment[];
     reactions: PostReactions;
     comments: PostComments;
+    can_delete?: boolean;
 }
 
 export interface PaginationLinks {
