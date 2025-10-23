@@ -194,3 +194,84 @@ export interface PaginatedData<T> {
 }
 
 export type BreadcrumbItemType = BreadcrumbItem;
+
+// Photo Gallery Types
+
+export type AlbumVisibility = 'public' | 'private' | 'followers_only' | 'link_only';
+
+export interface PhotoMetadata {
+    camera_make?: string;
+    camera_model?: string;
+    lens?: string;
+    focal_length?: string;
+    aperture?: string;
+    shutter_speed?: string;
+    iso?: number;
+    exposure_bias?: string;
+    flash?: string;
+    orientation?: number;
+    taken_at?: string;
+    latitude?: number;
+    longitude?: number;
+    [key: string]: any;
+}
+
+export interface PhotoTag {
+    id: number;
+    name: string;
+    slug: string;
+    photos_count?: number;
+    created_at: string;
+}
+
+export interface Album {
+    id: number;
+    title: string;
+    slug: string;
+    description?: string | null;
+    visibility: AlbumVisibility;
+    cover_url?: string | null;
+    photos_count?: number;
+    user?: User;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Photo {
+    id: number;
+    album_id: number;
+    title?: string | null;
+    slug: string;
+    description?: string | null;
+
+    // Image URLs for different sizes
+    url: string;
+    thumbnail_url: string;
+    medium_url: string;
+    original_url: string;
+
+    // File information
+    mime_type: string;
+    size: number;
+    formatted_size: string;
+
+    // Image dimensions
+    width: number;
+    height: number;
+
+    // Engagement metrics
+    views_count: number;
+    downloads_count: number;
+
+    // EXIF and metadata
+    metadata?: PhotoMetadata | null;
+
+    // Relationships
+    album?: Album;
+    user?: User;
+    tags?: PhotoTag[];
+
+    // Timestamps
+    created_at: string;
+    updated_at: string;
+}

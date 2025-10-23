@@ -20,5 +20,11 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
             'password' => bcrypt('TestUser12345678'),
         ]);
+
+        // Seed photo gallery data
+        $this->call([
+            AlbumSeeder::class,
+            PhotoSeeder::class,
+        ]);
     }
 }

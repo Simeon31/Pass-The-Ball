@@ -104,4 +104,28 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(GroupInvitation::class);
     }
+
+    /**
+     * Get the albums owned by the user.
+     */
+    public function albums()
+    {
+        return $this->hasMany(Album::class);
+    }
+
+    /**
+     * Get the photos uploaded by the user.
+     */
+    public function photos()
+    {
+        return $this->hasMany(Photo::class);
+    }
+
+    /**
+     * Get the photo tags created by the user.
+     */
+    public function photoTags()
+    {
+        return $this->hasMany(PhotoTag::class);
+    }
 }

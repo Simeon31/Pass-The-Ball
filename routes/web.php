@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\AlbumController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostReactionController;
 use App\Http\Controllers\ReactionController;
@@ -41,6 +43,46 @@ Route::get('/profile', function () {
 })->middleware(['auth', 'verified'])->name('profile');// Public Profile View Route (Facebook-like)
 Route::get('/profile/{username}', [ProfileController::class, 'show'])
     ->middleware(['auth', 'verified'])->name('profile.show');
+
+// Photo Gallery Routes (Profile-based)
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Album List (Gallery Home)
+    Route::get('/profile/{username}/gallery', [AlbumController::class, 'index'])
+        ->name('gallery.index');
+
+    // Album CRUD
+    Route::post('/gallery/albums', [AlbumController::class, 'store'])
+        ->name('gallery.albums.store');
+
+    Route::get('/profile/{username}/gallery/{album:slug}', [AlbumController::class, 'show'])
+        ->name('gallery.albums.show');
+
+    Route::put('/gallery/albums/{album}', [AlbumController::class, 'update'])
+        ->name('gallery.albums.update');
+
+    Route::delete('/gallery/albums/{album}', [AlbumController::class, 'destroy'])
+        ->name('gallery.albums.destroy');
+
+    // Photo Management
+    Route::post('/gallery/albums/{album}/photos', [PhotoController::class, 'store'])
+        ->name('gallery.photos.store');
+
+    Route::get('/profile/{username}/gallery/{album:slug}/{photo:slug}', [PhotoController::class, 'show'])
+        ->name('gallery.photos.show');
+
+    Route::put('/gallery/photos/{photo}', [PhotoController::class, 'update'])
+        ->name('gallery.photos.update');
+
+    Route::delete('/gallery/photos/{photo}', [PhotoController::class, 'destroy'])
+        ->name('gallery.photos.destroy');
+
+    // Photo Actions
+    Route::get('/gallery/photos/{photo}/download', [PhotoController::class, 'download'])
+        ->name('gallery.photos.download');
+
+    Route::post('/gallery/photos/{photo}/view', [PhotoController::class, 'incrementView'])
+        ->name('gallery.photos.view');
+});
 
 Route::post('/post', [PostController::class, 'store'])
     ->middleware(['auth', 'verified'])->name('post.create');
