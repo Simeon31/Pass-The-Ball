@@ -13,7 +13,7 @@ import { Link } from '@inertiajs/vue3';
 const form = useForm({
     name: '',
     about: '',
-    auto_approval: true,
+    auto_approval: false,
 });
 
 const submit = () => {

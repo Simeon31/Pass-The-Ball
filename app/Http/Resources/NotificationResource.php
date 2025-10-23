@@ -33,6 +33,8 @@ class NotificationResource extends JsonResource
         $typeMap = [
             'App\\Notifications\\GroupInvitationNotification' => 'invitation',
             'App\\Notifications\\GroupJoinRequestNotification' => 'join_request',
+            'App\\Notifications\\GroupJoinApprovedNotification' => 'join_approved',
+            'App\\Notifications\\GroupJoinRejectedNotification' => 'join_rejected',
             'App\\Notifications\\PostCommentNotification' => 'comment',
             'App\\Notifications\\PostReactionNotification' => 'reaction',
             'App\\Notifications\\UserFollowNotification' => 'follow',

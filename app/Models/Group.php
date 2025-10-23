@@ -80,6 +80,16 @@ class Group extends Model
     }
 
     /**
+     * Get all users in group_users table (no status filter) - for inserting
+     */
+    public function allUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'group_users')
+            ->withPivot(['status', 'role', 'created_at'])
+            ->withTimestamps();
+    }
+
+    /**
      * Get all approved members
      */
     public function approvedMembers(): BelongsToMany

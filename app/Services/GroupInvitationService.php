@@ -65,8 +65,8 @@ class GroupInvitationService
         // Mark invitation as accepted
         $invitation->markAsAccepted();
 
-        // Add user to group
-        $invitation->group->members()->attach($invitation->user_id, [
+        // Add user to group using allUsers relationship
+        $invitation->group->allUsers()->attach($invitation->user_id, [
             'status' => 'approved',
             'role' => $role->value,
             'created_by' => $invitation->invited_by,

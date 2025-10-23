@@ -3,21 +3,25 @@ import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { TabGroup, TabList, Tab, TabPanels, TabPanel } from '@headlessui/vue';
-import { Users, Settings, UserPlus, Upload, CheckCircle, XCircle, Clock, Bell } from 'lucide-vue-next';
+import { Users, Settings, UserPlus, Upload, CheckCircle, XCircle, Clock, Bell, UserCheck, UserX } from 'lucide-vue-next';
 import type { Group, Post, GroupMember, PaginatedData } from '@/types';
 import PostItem from '@/components/app/PostItem.vue';
 import CreatePost from '@/components/app/CreatePost.vue';
 import InviteMembersModal from '@/components/app/InviteMembersModal.vue';
 import { useFlashMessage } from '@/composables/useFlashMessage';
 import { CheckCircleIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+import { approve as approveRoute } from '@/routes/groups/admin';
 
 interface Props {
     group: Group;
     posts?: PaginatedData<Post>;
     members: GroupMember[];
     pendingRequestsCount?: number;
+    pendingRequests?: GroupMember[];
     hasPendingRequest?: boolean;
 }
 
@@ -126,6 +130,81 @@ const cancelImages = () => {
     thumbnailImageSrc.value = null;
     coverFile.value = null;
     thumbnailFile.value = null;
+};
+
+const handleApprove = (userId: number) => {
+    console.log('handleApprove called with userId:', userId);
+    if (confirm('Are you sure you want to approve this join request?')) {
+        const url = approveRoute.url(props.group.slug);
+        console.log('Sending approve request to:', url);
+        router.post(
+            url,
+            {
+                user_id: userId,
+                action: 'approve',
+                role: 'member',
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    console.log('Approve request successful');
+                },
+                onError: (errors) => {
+                    console.error('Approve request failed:', errors);
+                },
+            }
+        );
+    }
+};
+
+const handleReject = (userId: number) => {
+    console.log('handleReject called with userId:', userId);
+    if (confirm('Are you sure you want to reject this join request?')) {
+        const url = approveRoute.url(props.group.slug);
+        console.log('Sending reject request to:', url);
+        router.post(
+            url,
+            {
+                user_id: userId,
+                action: 'reject',
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    console.log('Reject request successful');
+                },
+                onError: (errors) => {
+                    console.error('Reject request failed:', errors);
+                },
+            }
+        );
+    }
+};
+
+const getUserInitials = (name: string) => {
+    return name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+};
+
+const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+    if (diffInDays === 0) {
+        return 'Today';
+    } else if (diffInDays === 1) {
+        return 'Yesterday';
+    } else if (diffInDays < 7) {
+        return `${diffInDays} days ago`;
+    } else {
+        return date.toLocaleDateString();
+    }
 };
 </script>
 
@@ -292,8 +371,7 @@ const cancelImages = () => {
                                 Members
                             </button>
                         </Tab>
-                        <Tab v-if="canManageRequests && pendingRequestsCount && pendingRequestsCount > 0"
-                            v-slot="{ selected }" as="template">
+                        <Tab v-if="canManageRequests" v-slot="{ selected }" as="template">
                             <button :class="[
                                 'px-4 py-3 text-sm font-medium border-b-2 transition-colors relative',
                                 selected
@@ -301,7 +379,7 @@ const cancelImages = () => {
                                     : 'border-transparent text-gray-600 hover:text-gray-900',
                             ]">
                                 Requests
-                                <span
+                                <span v-if="pendingRequestsCount && pendingRequestsCount > 0"
                                     class="ml-2 inline-flex items-center justify-center rounded-full bg-red-600 px-2 py-0.5 text-xs font-bold text-white">
                                     {{ pendingRequestsCount }}
                                 </span>
@@ -370,10 +448,25 @@ const cancelImages = () => {
                             <div class="mx-auto max-w-3xl">
                                 <Card class="p-6">
                                     <h3 class="mb-4 text-lg font-semibold">About This Group</h3>
-                                    <p v-if="group.about" class="whitespace-pre-wrap text-gray-700">
+                                    <p v-if="group.about" class="whitespace-pre-wrap text-gray-700 mb-4">
                                         {{ group.about }}
                                     </p>
-                                    <p v-else class="italic text-gray-500">No description provided</p>
+                                    <p v-else class="italic text-gray-500 mb-4">No description provided</p>
+
+                                    <div class="mt-6 pt-6 border-t border-gray-200">
+                                        <h4 class="text-sm font-semibold text-gray-700 mb-3">Group Settings</h4>
+                                        <div class="flex items-center justify-between py-2">
+                                            <span class="text-sm text-gray-600">Join Requests</span>
+                                            <Badge :variant="group.auto_approval ? 'default' : 'secondary'">
+                                                {{ group.auto_approval ? 'Auto-approved' : 'Requires Approval' }}
+                                            </Badge>
+                                        </div>
+                                        <div class="flex items-center justify-between py-2">
+                                            <span class="text-sm text-gray-600">Created</span>
+                                            <span class="text-sm text-gray-500">{{ new
+                                                Date(group.created_at).toLocaleDateString() }}</span>
+                                        </div>
+                                    </div>
                                 </Card>
                             </div>
                         </TabPanel>
@@ -413,10 +506,64 @@ const cancelImages = () => {
                         <!-- Requests Tab -->
                         <TabPanel v-if="canManageRequests">
                             <div class="mx-auto max-w-3xl">
-                                <Card class="p-6">
-                                    <h3 class="mb-4 text-lg font-semibold">Pending Join Requests</h3>
-                                    <p class="text-gray-600">Manage join requests here</p>
-                                </Card>
+                                <div class="space-y-4">
+                                    <Card v-if="!pendingRequests || pendingRequests.length === 0">
+                                        <CardContent class="flex flex-col items-center justify-center py-12">
+                                            <Clock class="h-16 w-16 text-gray-300 mb-4" />
+                                            <p class="text-lg font-medium text-gray-900 mb-1">No pending requests</p>
+                                            <p class="text-sm text-gray-500">All join requests have been processed</p>
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card v-for="request in pendingRequests" :key="request.id"
+                                        class="hover:shadow-md transition-shadow">
+                                        <CardContent class="p-6">
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center gap-4">
+                                                    <Avatar class="h-16 w-16">
+                                                        <AvatarImage v-if="request.user?.profile_picture_url"
+                                                            :src="request.user.profile_picture_url"
+                                                            :alt="request.user?.name || 'User'" />
+                                                        <AvatarFallback>
+                                                            {{ getUserInitials(request.user?.name || 'U') }}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+
+                                                    <div>
+                                                        <div class="flex items-center gap-2 mb-1">
+                                                            <h3 class="text-lg font-semibold text-gray-900">
+                                                                {{ request.user?.name || 'Unknown User' }}
+                                                            </h3>
+                                                            <Badge variant="secondary">
+                                                                <Clock class="mr-1 h-3 w-3" />
+                                                                Pending
+                                                            </Badge>
+                                                        </div>
+                                                        <p class="text-sm text-gray-600">
+                                                            @{{ request.user?.username || 'unknown' }}
+                                                        </p>
+                                                        <p class="text-xs text-gray-500 mt-1">
+                                                            Requested {{ formatDate(request.joined_at) }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="flex gap-2">
+                                                    <Button variant="default" size="sm"
+                                                        @click="handleApprove(request.user?.id || 0)">
+                                                        <UserCheck class="mr-2 h-4 w-4" />
+                                                        Approve
+                                                    </Button>
+                                                    <Button variant="destructive" size="sm"
+                                                        @click="handleReject(request.user?.id || 0)">
+                                                        <UserX class="mr-2 h-4 w-4" />
+                                                        Reject
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </div>
                             </div>
                         </TabPanel>
                     </TabPanels>

@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->string('slug', length: 255);
             $table->string('cover_path', length: 1024)->nullable();
             $table->string('thumbnail_path', length: 1024)->nullable();
-            $table->boolean('auto_approval')->default(true);
+            $table->boolean('auto_approval')->default(false);
             $table->text('about')->nullable();
             $table->foreignId('user_id')->constrained('users');
             $table->timestamp('deleted_at')->nullable();

@@ -11,7 +11,23 @@ class ApproveJoinRequestRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->can('approveRequests', $this->route('group'));
+        $group = $this->route('group');
+        $user = $this->user();
+
+        \Log::info('Authorization check', [
+            'user_id' => $user?->id,
+            'group_id' => $group?->id,
+            'group_user_id' => $group?->user_id,
+            'is_owner' => $group?->isOwner($user),
+        ]);
+
+        $canApprove = $user->can('approveRequests', $group);
+
+        \Log::info('Authorization result', [
+            'can_approve' => $canApprove,
+        ]);
+
+        return $canApprove;
     }
 
     /**
@@ -21,6 +37,12 @@ class ApproveJoinRequestRequest extends FormRequest
      */
     public function rules(): array
     {
+        \Log::info('Validation input', [
+            'user_id' => $this->input('user_id'),
+            'action' => $this->input('action'),
+            'role' => $this->input('role'),
+        ]);
+
         return [
             'user_id' => ['required', 'exists:users,id'],
             'action' => ['required', 'in:approve,reject'],

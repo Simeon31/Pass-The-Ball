@@ -14,12 +14,13 @@ class GroupMemberResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        // The resource is a User model with pivot data
         return [
             'id' => $this->id,
-            'user' => new UserResource($this->whenLoaded('user')),
-            'role' => $this->pivot->role ?? $this->role,
-            'status' => $this->pivot->status ?? $this->status,
-            'joined_at' => $this->pivot->created_at ?? $this->created_at,
+            'user' => new UserResource($this),
+            'role' => $this->pivot->role ?? null,
+            'status' => $this->pivot->status ?? null,
+            'joined_at' => $this->pivot->created_at ?? null,
         ];
     }
 }

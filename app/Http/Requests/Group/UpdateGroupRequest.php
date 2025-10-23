@@ -24,8 +24,21 @@ class UpdateGroupRequest extends FormRequest
         return [
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'about' => ['nullable', 'string', 'max:5000'],
-            'auto_approval' => ['boolean'],
+            'auto_approval' => ['sometimes', 'boolean'],
         ];
+    }
+
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        // Ensure auto_approval is explicitly set (handle unchecked checkbox)
+        if ($this->has('auto_approval')) {
+            $this->merge([
+                'auto_approval' => $this->boolean('auto_approval'),
+            ]);
+        }
     }
 
     /**

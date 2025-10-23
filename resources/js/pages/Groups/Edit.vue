@@ -23,8 +23,12 @@ const form = useForm({
 });
 
 const submit = () => {
+    console.log('Submitting form with auto_approval:', form.auto_approval);
     form.put(`/groups/${props.group.slug}`, {
         preserveScroll: true,
+        onSuccess: () => {
+            console.log('Group updated successfully');
+        },
     });
 };
 
@@ -89,11 +93,15 @@ const deleteGroup = () => {
                             </div>
 
                             <!-- Auto Approval -->
-                            <div class="flex items-center justify-between rounded-lg border p-4">
+                            <div class="flex items-center justify-between rounded-lg border p-4"
+                                :class="form.auto_approval ? 'border-green-200 bg-green-50' : 'border-gray-200 bg-gray-50'">
                                 <div class="flex-1 space-y-0.5">
                                     <Label for="auto_approval">Auto-approve join requests</Label>
-                                    <p class="text-sm text-gray-500">
-                                        Automatically approve new members without manual review
+                                    <p class="text-sm" :class="form.auto_approval ? 'text-green-700' : 'text-gray-500'">
+                                        {{ form.auto_approval
+                                            ? 'Members can join immediately without approval'
+                                            : 'Join requests require admin approval'
+                                        }}
                                     </p>
                                 </div>
                                 <Checkbox id="auto_approval" :checked="form.auto_approval"

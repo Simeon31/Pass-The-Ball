@@ -89,7 +89,7 @@ export interface GroupInvitation {
     created_at: string;
 }
 
-export type NotificationCategory = 'invitation' | 'join_request' | 'comment' | 'reaction' | 'follow' | 'general';
+export type NotificationCategory = 'invitation' | 'join_request' | 'join_approved' | 'join_rejected' | 'comment' | 'reaction' | 'follow' | 'general';
 
 export interface Notification {
     id: string;

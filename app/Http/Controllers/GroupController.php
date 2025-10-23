@@ -17,6 +17,8 @@ use App\Models\Group;
 use App\Models\GroupInvitation;
 use App\Models\User;
 use App\Notifications\GroupInvitationNotification;
+use App\Notifications\GroupJoinApprovedNotification;
+use App\Notifications\GroupJoinRejectedNotification;
 use App\Notifications\GroupJoinRequestNotification;
 use App\Services\GroupInvitationService;
 use App\Services\GroupPermissionService;
@@ -92,7 +94,7 @@ class GroupController extends Controller
         ]);
 
         // Add creator as admin
-        $group->members()->attach(auth()->id(), [
+        $group->allUsers()->attach(auth()->id(), [
             'status' => 'approved',
             'role' => GroupRole::ADMIN->value,
             'created_by' => auth()->id(),
@@ -129,10 +131,15 @@ class GroupController extends Controller
             $posts = PostResource::collection($posts);
         }
 
-        // Get pending join requests count for admins/moderators
+        // Get pending join requests for admins/moderators
         $pendingRequestsCount = 0;
+        $pendingRequests = collect();
         if ($user && $this->permissionService->canApproveRequests($user, $group)) {
-            $pendingRequestsCount = $group->pendingRequests()->count();
+            $pendingRequestsData = $group->pendingRequests()
+                ->withPivot(['created_at'])
+                ->get();
+            $pendingRequestsCount = $pendingRequestsData->count();
+            $pendingRequests = GroupMemberResource::collection($pendingRequestsData);
         }
 
         // Check if user has a pending join request
@@ -148,6 +155,7 @@ class GroupController extends Controller
             'posts' => $posts,
             'members' => GroupMemberResource::collection($group->members),
             'pendingRequestsCount' => $pendingRequestsCount,
+            'pendingRequests' => $pendingRequests,
             'hasPendingRequest' => $hasPendingRequest,
         ]);
     }
@@ -170,6 +178,10 @@ class GroupController extends Controller
     public function update(UpdateGroupRequest $request, Group $group): RedirectResponse
     {
         $data = $request->validated();
+
+        if (array_key_exists('auto_approval', $data)) {
+            $group->auto_approval = (bool) $data['auto_approval'];
+        }
 
         $group->update($data);
 
@@ -368,23 +380,23 @@ class GroupController extends Controller
     {
         $user = auth()->user();
 
-        // Check if already a member
+        // Check if already a member (approved)
         if ($group->isMember($user)) {
             return back()->withErrors(['group' => 'You are already a member of this group.']);
         }
 
-        // Check if there's a pending request
-        $pendingRequest = $group->pendingRequests()
+        // Check if there's already ANY relationship (pending or approved)
+        $existingRelation = $group->allUsers()
             ->where('user_id', $user->id)
             ->exists();
 
-        if ($pendingRequest) {
+        if ($existingRelation) {
             return back()->withErrors(['group' => 'You already have a pending join request.']);
         }
 
         if ($group->auto_approval) {
             // Auto-approve: immediately add as member
-            $group->members()->attach($user->id, [
+            $group->allUsers()->attach($user->id, [
                 'status' => 'approved',
                 'role' => GroupRole::MEMBER->value,
                 'created_by' => $user->id,
@@ -394,7 +406,7 @@ class GroupController extends Controller
             return back()->with('status', 'You have successfully joined the group!');
         } else {
             // Manual approval: create pending request
-            $group->members()->attach($user->id, [
+            $group->allUsers()->attach($user->id, [
                 'status' => 'pending',
                 'role' => GroupRole::MEMBER->value,
                 'created_by' => $user->id,
@@ -422,27 +434,47 @@ class GroupController extends Controller
         $data = $request->validated();
         $userId = $data['user_id'];
 
-        // Find the pending request
-        $pendingMember = $group->members()
-            ->wherePivot('user_id', $userId)
-            ->wherePivot('status', 'pending')
+        // Find the pending request using pendingRequests relationship
+        $pendingMember = $group->pendingRequests()
+            ->where('user_id', $userId)
             ->first();
 
         if (!$pendingMember) {
+            \Log::error('Join request not found', [
+                'group_id' => $group->id,
+                'user_id' => $userId,
+                'pending_count' => $group->pendingRequests()->count(),
+            ]);
             return back()->withErrors(['request' => 'Join request not found.']);
         }
 
         if ($data['action'] === 'approve') {
-            // Update status to approved
-            $group->members()->updateExistingPivot($userId, [
+            // Update status to approved using allUsers relationship
+            $group->allUsers()->updateExistingPivot($userId, [
                 'status' => 'approved',
                 'role' => $data['role'] ?? GroupRole::MEMBER->value,
             ]);
 
+            // Notify user of approval
+            $pendingMember->notify(new GroupJoinApprovedNotification($group));
+
+            \Log::info('Join request approved', [
+                'group_id' => $group->id,
+                'user_id' => $userId,
+            ]);
+
             return back()->with('status', 'Join request approved!');
         } else {
-            // Reject and remove the request
-            $group->members()->detach($userId);
+            // Reject and remove the request using allUsers relationship
+            $group->allUsers()->detach($userId);
+
+            // Notify user of rejection
+            $pendingMember->notify(new GroupJoinRejectedNotification($group));
+
+            \Log::info('Join request rejected', [
+                'group_id' => $group->id,
+                'user_id' => $userId,
+            ]);
 
             return back()->with('status', 'Join request rejected.');
         }
@@ -481,7 +513,7 @@ class GroupController extends Controller
             return back()->withErrors(['group' => 'You are not a member of this group.']);
         }
 
-        $group->members()->detach($user->id);
+        $group->allUsers()->detach($user->id);
 
         return redirect()->route('groups.index')
             ->with('status', 'You have left the group.');

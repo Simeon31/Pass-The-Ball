@@ -35,7 +35,7 @@ class StoreGroupRequest extends FormRequest
     {
         $this->merge([
             'user_id' => auth()->id(),
-            'auto_approval' => $this->boolean('auto_approval', true),
+            'auto_approval' => $this->boolean('auto_approval', false),
         ]);
     }
 
