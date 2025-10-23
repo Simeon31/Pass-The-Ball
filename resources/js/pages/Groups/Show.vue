@@ -12,6 +12,7 @@ import type { Group, Post, GroupMember, PaginatedData } from '@/types';
 import PostItem from '@/components/app/PostItem.vue';
 import CreatePost from '@/components/app/CreatePost.vue';
 import InviteMembersModal from '@/components/app/InviteMembersModal.vue';
+import RoleSelector from '@/components/app/RoleSelector.vue';
 import { useFlashMessage } from '@/composables/useFlashMessage';
 import { CheckCircleIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { approve as approveRoute } from '@/routes/groups/admin';
@@ -54,6 +55,10 @@ const canInvite = computed(() => {
 
 const canManageRequests = computed(() => {
     return props.group.permissions?.includes('approve_join_requests');
+});
+
+const canChangeRoles = computed(() => {
+    return props.group.permissions?.includes('change_member_roles');
 });
 
 // Flash message handling
@@ -412,20 +417,6 @@ const formatDate = (dateString: string) => {
 
                         <!-- Posts Tab -->
                         <TabPanel>
-                            <div class="w-full h-full relative size-32 ...">
-                                <div class="absolute inset-y-0 right-0 w-[300px] ">
-                                    <Card class="p-6">
-                                        <h3 class="mb-4 text-lg font-semibold">About This Group</h3>
-                                        <p v-if="group.about" class="whitespace-pre-wrap text-gray-700">
-                                            {{ group.about }}
-                                        </p>
-                                        <p v-else class="italic text-gray-500">No description provided</p>
-                                    </Card>
-                                </div>
-                            </div>
-
-
-
                             <div class="mx-auto max-w-3xl">
                                 <div v-if="group.is_member" class="space-y-4">
                                     <CreatePost v-if="canPost" :groupId="group.id" />
@@ -479,20 +470,28 @@ const formatDate = (dateString: string) => {
                                     <div v-if="members && members.length > 0"
                                         class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                                         <div v-for="member in members" :key="member.id"
-                                            class="flex items-center gap-3 rounded-lg border p-3">
+                                            class="flex items-center gap-3 rounded-lg border p-3 hover:shadow-md transition-shadow">
                                             <img v-if="member.user?.profile_picture_url"
                                                 :src="member.user.profile_picture_url"
                                                 :alt="member.user?.name || 'Member'"
-                                                class="h-10 w-10 rounded-full object-cover" />
+                                                class="h-10 w-10 rounded-full object-cover flex-shrink-0" />
                                             <div v-else
-                                                class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200">
+                                                class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gray-200">
                                                 <Users class="h-5 w-5 text-gray-600" />
                                             </div>
                                             <div class="min-w-0 flex-1">
                                                 <p class="truncate text-sm font-medium">{{ member.user?.name ||
                                                     'Unknown' }}
                                                 </p>
-                                                <p class="text-xs capitalize text-gray-500">{{ member.role }}</p>
+                                                <div class="mt-1">
+                                                    <RoleSelector v-if="canChangeRoles && member.user?.id"
+                                                        :current-role="member.role" :member-id="member.user.id"
+                                                        :group-slug="group.slug"
+                                                        :is-owner="group.is_owner && member.user.id === group.owner?.id" />
+                                                    <Badge v-else variant="outline" class="text-xs capitalize">
+                                                        {{ member.role }}
+                                                    </Badge>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

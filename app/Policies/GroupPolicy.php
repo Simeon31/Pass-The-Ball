@@ -153,4 +153,16 @@ class GroupPolicy
             GroupPermission::MODERATE_POSTS
         );
     }
+
+    /**
+     * Determine whether the user can change member roles.
+     */
+    public function changeMemberRoles(User $user, Group $group): bool
+    {
+        return $this->permissionService->hasPermission(
+            $user,
+            $group,
+            GroupPermission::CHANGE_MEMBER_ROLES
+        );
+    }
 }

@@ -48,7 +48,8 @@ export type GroupPermission =
     | 'approve_join_requests'
     | 'remove_members'
     | 'moderate_posts'
-    | 'delete_group';
+    | 'delete_group'
+    | 'change_member_roles';
 
 export interface Group {
     id: number;

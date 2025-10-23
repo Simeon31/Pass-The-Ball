@@ -9,6 +9,7 @@ use App\Http\Requests\Group\JoinGroupRequest;
 use App\Http\Requests\Group\StoreGroupRequest;
 use App\Http\Requests\Group\UpdateGroupImagesRequest;
 use App\Http\Requests\Group\UpdateGroupRequest;
+use App\Http\Requests\Group\UpdateMemberRoleRequest;
 use App\Http\Resources\GroupInvitationResource;
 use App\Http\Resources\GroupMemberResource;
 use App\Http\Resources\GroupResource;
@@ -532,6 +533,48 @@ class GroupController extends Controller
             'invitations' => GroupInvitationResource::collection($invitations),
         ]);
     }
+
+    /**
+     * Update a member's role in the group.
+     */
+    public function updateMemberRole(UpdateMemberRoleRequest $request, Group $group, User $user): RedirectResponse
+    {
+        $this->authorize('changeMemberRoles', $group);
+
+        // Validate that the user is a member of the group
+        if (!$group->isMember($user)) {
+            return back()->withErrors(['user' => 'This user is not a member of the group.']);
+        }
+
+        // Prevent changing the owner's role
+        if ($group->isOwner($user)) {
+            return back()->withErrors(['user' => 'Cannot change the role of the group owner.']);
+        }
+
+        $newRole = $request->validated()['role'];
+        $newRoleEnum = GroupRole::from($newRole);
+        $currentUser = auth()->user();
+
+        // Only owner can assign admin role
+        if ($newRoleEnum === GroupRole::ADMIN && !$group->isOwner($currentUser)) {
+            return back()->withErrors(['role' => 'Only the group owner can assign the admin role.']);
+        }
+
+        // Prevent admins from demoting other admins (only owner can do this)
+        $currentRole = $group->getUserRole($user);
+        if ($currentRole === GroupRole::ADMIN->value && !$group->isOwner($currentUser)) {
+            return back()->withErrors(['role' => 'Only the group owner can change an admin\'s role.']);
+        }
+
+        // Update the role in the pivot table
+        $group->allUsers()->updateExistingPivot($user->id, [
+            'role' => $newRole,
+        ]);
+
+        return back()->with('status', "Successfully updated {$user->name}'s role to {$newRoleEnum->label()}.");
+    }
 }
+
+
 
 
