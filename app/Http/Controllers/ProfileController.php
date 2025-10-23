@@ -18,10 +18,11 @@ class ProfileController extends Controller
         // Find user by username
         $user = User::where('username', $username)->firstOrFail();
 
-        // Load relationships
+        // Load relationships - only personal posts (not group posts)
         $user->load([
             'posts' => function ($query) {
-                $query->latest()
+                $query->whereNull('group_id') // Only personal posts, not group posts
+                    ->latest()
                     ->with([
                         'user',
                         'reactions',
