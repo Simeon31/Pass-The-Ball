@@ -30,7 +30,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('photo_id')->constrained('photos')->onDelete('cascade');
             $table->foreignId('photo_tag_id')->constrained('photo_tags')->onDelete('cascade');
-            $table->timestamp('created_at')->nullable();
+            $table->timestamps();
 
             // Prevent duplicate tags on same photo
             $table->unique(['photo_id', 'photo_tag_id']);

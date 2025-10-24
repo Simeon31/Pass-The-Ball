@@ -97,10 +97,18 @@ function removeCover() {
 }
 
 function submit() {
+    console.log('Submit function called');
+    console.log('Form data:', form.data());
+    console.log('Route URL:', createAlbum.url());
+
     form.post(createAlbum.url(), {
         onSuccess: () => {
+            console.log('Album created successfully');
             resetForm();
             close();
+        },
+        onError: (errors) => {
+            console.error('Form submission errors:', errors);
         },
     });
 }

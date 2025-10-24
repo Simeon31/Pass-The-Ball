@@ -10,11 +10,9 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('post_reactions', function (Blueprint $table) {
-            // Drop old foreign key and post_id column
-            $table->dropForeign('post_reactions_post_id_foreign');
-            $table->dropColumn('post_id');
-        });
+        // This migration is no longer needed as the original migration
+        // now uses polymorphic columns (reactable_id, reactable_type)
+        // instead of post_id
     }
 
     /**
@@ -22,9 +20,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('post_reactions', function (Blueprint $table) {
-            // Add back post_id column
-            $table->foreignId('post_id')->nullable()->after('id')->constrained('posts');
-        });
+        // No action needed
     }
 };

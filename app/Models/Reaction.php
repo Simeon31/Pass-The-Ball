@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Reaction extends Model
 {
+    protected $table = 'post_reactions';
 
     const UPDATED_AT = null;
 

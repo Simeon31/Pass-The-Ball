@@ -34,7 +34,6 @@ class PhotoFactory extends Factory
             'original_file_path' => 'photos/sample/original/' . fake()->uuid() . '.jpg',
             'thumbnail_path' => 'photos/sample/thumbnail/' . fake()->uuid() . '.jpg',
             'medium_path' => 'photos/sample/medium/' . fake()->uuid() . '.jpg',
-            'large_path' => 'photos/sample/large/' . fake()->uuid() . '.jpg',
             'mime_type' => 'image/jpeg',
             'size' => fake()->numberBetween(500000, 5000000), // 500KB - 5MB
             'width' => $width,

@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useFlashMessage } from '@/composables/useFlashMessage';
 import AppLayout from '@/layouts/AppLayout.vue';
+import CreateAlbumModal from '@/components/app/CreateAlbumModal.vue';
 import { index as galleryIndex } from '@/routes/gallery';
 import type { Album, PaginatedData, User } from '@/types';
 import { CheckCircleIcon, XMarkIcon } from '@heroicons/vue/24/outline';
@@ -23,6 +24,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const searchQuery = ref(props.filters?.search || '');
+const showCreateModal = ref(false);
 
 // Flash message
 const {
@@ -103,7 +105,7 @@ const handleSearch = () => {
                         }}
                     </p>
                 </div>
-                <Button v-if="isOwner">
+                <Button v-if="isOwner" @click="showCreateModal = true">
                     <Plus class="mr-2 h-4 w-4" />
                     Create Album
                 </Button>
@@ -166,13 +168,13 @@ const handleSearch = () => {
                 <p class="mt-2 text-sm text-gray-600">
                     {{
                         searchQuery
-                            ? 'Try a different search term'
+                            ? 'Try a different search word'
                             : isOwner
                                 ? 'Create your first album to get started'
                                 : `${profileUser.name} hasn't created any albums yet`
                     }}
                 </p>
-                <Button v-if="isOwner && !searchQuery" class="mt-4">
+                <Button v-if="isOwner && !searchQuery" class="mt-4" @click="showCreateModal = true">
                     <Plus class="mr-2 h-4 w-4" />
                     Create Album
                 </Button>
@@ -192,5 +194,8 @@ const handleSearch = () => {
                 </Button>
             </div>
         </div>
+
+        <!-- Create Album Modal -->
+        <CreateAlbumModal v-model:isOpen="showCreateModal" />
     </AppLayout>
 </template>

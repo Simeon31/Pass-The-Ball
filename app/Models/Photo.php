@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -12,7 +13,7 @@ use Spatie\Sluggable\SlugOptions;
 
 class Photo extends Model
 {
-    use SoftDeletes, HasSlug;
+    use HasFactory, SoftDeletes, HasSlug;
 
     /**
      * The attributes that are mass assignable.
@@ -160,6 +161,15 @@ class Photo extends Model
      */
     protected function buildAssetUrl(string $path): string
     {
+        // Check if the file actually exists
+        if (!Storage::disk('public')->exists($path)) {
+            // Return placeholder image using a service like placeholder.com or picsum.photos
+            // Using dimensions from the photo if available
+            $width = $this->width ?? 800;
+            $height = $this->height ?? 600;
+            return "https://picsum.photos/{$width}/{$height}?random=" . $this->id;
+        }
+
         // If the path starts with '/storage/', it's already a full path
         if (str_starts_with($path, '/storage/')) {
             return asset($path);

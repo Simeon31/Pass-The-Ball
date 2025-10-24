@@ -70,7 +70,6 @@ class AlbumController extends Controller
 
         $data = $request->validated();
 
-        // Create the album
         $album = Album::create([
             'user_id' => auth()->id(),
             'title' => $data['title'],
@@ -100,7 +99,6 @@ class AlbumController extends Controller
     {
         $user = User::where('username', $username)->firstOrFail();
 
-        // Verify album belongs to this user
         if ($album->user_id !== $user->id) {
             abort(404);
         }
@@ -115,10 +113,10 @@ class AlbumController extends Controller
             ->paginate(24);
 
         return Inertia::render('Gallery/Show', [
-            'user' => $user,
+            'profileUser' => $user,
             'album' => new AlbumResource($album->load('user')),
             'photos' => PhotoResource::collection($photos),
-            'can_edit' => auth()->id() === $album->user_id,
+            'isOwner' => auth()->id() === $album->user_id,
         ]);
     }
 
@@ -166,7 +164,7 @@ class AlbumController extends Controller
     {
         $this->authorize('delete', $album);
 
-        // Soft delete the album (cascade deletes photos via model events if needed)
+        // Soft delete the album (cascade deletes photos via model events)
         $album->deleted_by = auth()->id();
         $album->save();
         $album->delete();

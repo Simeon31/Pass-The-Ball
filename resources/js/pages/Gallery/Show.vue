@@ -3,6 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useFlashMessage } from '@/composables/useFlashMessage';
 import AppLayout from '@/layouts/AppLayout.vue';
+import EditAlbumModal from '@/components/app/EditAlbumModal.vue';
+import UploadPhotosModal from '@/components/app/UploadPhotosModal.vue';
+import { destroy as deleteAlbum } from '@/routes/gallery/albums';
+import { index as galleryIndex } from '@/routes/gallery';
 import type { Album, PaginatedData, Photo, User } from '@/types';
 import { CheckCircleIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { Head, router } from '@inertiajs/vue3';
@@ -17,6 +21,10 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+// Modal states
+const showEditModal = ref(false);
+const showUploadModal = ref(false);
 
 // Flash message
 const {
@@ -35,6 +43,32 @@ const currentUrl = computed(() => {
 
 const coverImage = computed(() => {
     return props.album.cover_url || props.photos.data[0]?.medium_url || '';
+});
+
+// Schema.org structured data
+const schemaData = computed(() => {
+    return JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'ImageGallery',
+        'name': props.album.title,
+        'description': props.album.description || `Photo album by ${props.profileUser.name}`,
+        'author': {
+            '@type': 'Person',
+            'name': props.profileUser.name,
+        },
+        'image': props.photos.data.slice(0, 10).map(photo => ({
+            '@type': 'ImageObject',
+            'contentUrl': photo.medium_url,
+            'thumbnailUrl': photo.thumbnail_url,
+            'name': photo.title || `Photo from ${props.album.title}`,
+            'description': photo.description || '',
+            'uploadDate': photo.created_at,
+            'width': photo.width || '',
+            'height': photo.height || '',
+        })),
+        'numberOfItems': props.album.photos_count || 0,
+        'dateCreated': props.album.created_at,
+    });
 });
 
 // Infinite scroll state
@@ -73,6 +107,20 @@ const loadMore = async () => {
     } finally {
         isLoading.value = false;
     }
+};
+
+// Delete album
+const handleDeleteAlbum = () => {
+    if (!confirm('Are you sure you want to delete this album? This action cannot be undone.')) {
+        return;
+    }
+
+    router.delete(deleteAlbum.url({ album: props.album.slug }), {
+        onSuccess: () => {
+            // Redirect to gallery index after deletion
+            router.get(galleryIndex.url({ username: props.profileUser.username }));
+        },
+    });
 };
 
 // Infinite scroll observer
@@ -132,35 +180,10 @@ const openPhoto = (photo: Photo) => {
             <!-- General Meta Tags -->
             <meta name="description"
                 :content="album.description || `Photo album by ${profileUser.name} containing ${album.photos_count || 0} photos`" />
-
-            <!-- Schema.org JSON-LD -->
-            <script type="application/ld+json">
-                {{
-                    JSON.stringify({
-                        '@context': 'https://schema.org',
-                        '@type': 'ImageGallery',
-                        'name': album.title,
-                        'description': album.description || `Photo album by ${profileUser.name}`,
-                        'author': {
-                            '@type': 'Person',
-                            'name': profileUser.name,
-                        },
-                        'image': photos.data.slice(0, 10).map(photo => ({
-                            '@type': 'ImageObject',
-                            'contentUrl': photo.medium_url,
-                            'thumbnailUrl': photo.thumbnail_url,
-                            'name': photo.title || `Photo from ${album.title}`,
-                            'description': photo.description || '',
-                            'uploadDate': photo.created_at,
-                            'width': photo.width || '',
-                            'height': photo.height || '',
-                        })),
-                        'numberOfItems': album.photos_count || 0,
-                        'dateCreated': album.created_at,
-                    })
-                }}
-            </script>
         </Head>
+
+        <!-- Schema.org JSON-LD -->
+        <component :is="'script'" type="application/ld+json" v-html="schemaData"></component>
 
         <div class="container mx-auto h-full overflow-auto px-4 py-6">
             <!-- Success Message -->
@@ -193,7 +216,7 @@ const openPhoto = (photo: Photo) => {
                             <h1 class="text-3xl font-bold text-gray-900">
                                 {{ album.title }}
                             </h1>
-                            <Button v-if="isOwner" variant="ghost" size="icon">
+                            <Button v-if="isOwner" variant="ghost" size="icon" @click="showEditModal = true">
                                 <Edit class="h-4 w-4" />
                             </Button>
                         </div>
@@ -210,11 +233,11 @@ const openPhoto = (photo: Photo) => {
                         </div>
                     </div>
                     <div class="flex gap-2">
-                        <Button v-if="isOwner">
+                        <Button v-if="isOwner" @click="showUploadModal = true">
                             <Plus class="mr-2 h-4 w-4" />
                             Upload Photos
                         </Button>
-                        <Button v-if="isOwner" variant="destructive">
+                        <Button v-if="isOwner" variant="destructive" @click="handleDeleteAlbum">
                             <Trash2 class="mr-2 h-4 w-4" />
                             Delete Album
                         </Button>
@@ -270,7 +293,7 @@ const openPhoto = (photo: Photo) => {
                             : 'This album is empty'
                     }}
                 </p>
-                <Button v-if="isOwner" class="mt-4">
+                <Button v-if="isOwner" class="mt-4" @click="showUploadModal = true">
                     <Plus class="mr-2 h-4 w-4" />
                     Upload Photos
                 </Button>
@@ -284,5 +307,9 @@ const openPhoto = (photo: Photo) => {
                 </div>
             </div>
         </div>
+
+        <!-- Modals -->
+        <EditAlbumModal v-model:isOpen="showEditModal" :album="album" />
+        <UploadPhotosModal v-model:isOpen="showUploadModal" :album="album" />
     </AppLayout>
 </template>

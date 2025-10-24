@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,7 +13,7 @@ use Spatie\Sluggable\SlugOptions;
 
 class Album extends Model
 {
-    use SoftDeletes, HasSlug;
+    use HasFactory, SoftDeletes, HasSlug;
 
     /**
      * The attributes that are mass assignable.
@@ -89,6 +90,12 @@ class Album extends Model
     {
         if (!$this->cover_path) {
             return null;
+        }
+
+        // Check if the file actually exists
+        if (!Storage::disk('public')->exists($this->cover_path)) {
+            // Return placeholder image - using a fixed size for album covers
+            return "https://picsum.photos/800/600?random=album-" . $this->id;
         }
 
         // If the path starts with '/storage/', it's already a full path

@@ -95,7 +95,7 @@ class PhotoSeeder extends Seeder
         foreach ($selectedTags as $tagName) {
             // Find or create tag
             $tag = PhotoTag::firstOrCreate(
-                ['name' => $tagName],
+                ['name' => $tagName, 'user_id' => $photo->user_id],
                 ['slug' => Str::slug($tagName)]
             );
 
