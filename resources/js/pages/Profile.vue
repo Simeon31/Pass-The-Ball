@@ -152,7 +152,7 @@
                         </Tab>
 
                         <Tab v-slot="{ selected }" as="template">
-                            <TabItem text="Photos" :selected="selected" />
+                            <TabItem text="Gallery" :selected="selected" />
                         </Tab>
                     </TabList>
 
@@ -221,9 +221,66 @@
                         </TabPanel>
 
                         <TabPanel key="photos" class="bg-white p-3 shadow">
-                            <p class="text-gray-600">
-                                Photos will be displayed here
-                            </p>
+                            <div class="space-y-4">
+                                <!-- Header with View All link -->
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-lg font-semibold">Photo Albums</h3>
+                                    <Link v-if="latestAlbums && latestAlbums.length > 0"
+                                        :href="`/profile/${user.username}/gallery`"
+                                        class="text-sm font-medium text-blue-600 hover:text-blue-700">
+                                    View All ({{ totalAlbumsCount }})
+                                    </Link>
+                                </div>
+
+                                <!-- Albums Grid -->
+                                <div v-if="latestAlbums && latestAlbums.length > 0"
+                                    class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                                    <Link v-for="album in latestAlbums" :key="album.id"
+                                        :href="`/profile/${user.username}/gallery/${album.slug}`"
+                                        class="group relative aspect-square overflow-hidden rounded-lg bg-gray-100 shadow transition-shadow hover:shadow-lg">
+                                    <img v-if="album.cover_url" :src="album.cover_url" :alt="album.title"
+                                        class="h-full w-full object-cover transition-transform group-hover:scale-105" />
+                                    <div v-else
+                                        class="flex h-full w-full items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                            stroke-width="1.5" stroke="currentColor" class="h-12 w-12 text-gray-400">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                                        </svg>
+                                    </div>
+                                    <div
+                                        class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                                        <h4 class="truncate text-sm font-medium text-white">{{ album.title }}</h4>
+                                        <p class="text-xs text-gray-300">{{ album.photos_count || 0 }} photos</p>
+                                    </div>
+                                    </Link>
+                                </div>
+
+                                <!-- Empty State -->
+                                <div v-else class="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor"
+                                        class="mx-auto h-12 w-12 text-gray-400">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                                    </svg>
+                                    <p class="mt-4 text-gray-600">
+                                        {{ isOwnProfile ? "You haven't created any albums yet" : "No photo albums to display" }}
+                                    </p>
+                                    <p v-if="isOwnProfile" class="mt-2 text-sm text-gray-500">
+                                        Create an album to start organizing your photos!
+                                    </p>
+                                    <Link v-if="isOwnProfile" :href="`/profile/${user.username}/gallery`"
+                                        class="mt-4 inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                        stroke-width="1.5" stroke="currentColor" class="mr-2 h-5 w-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M12 4.5v15m7.5-7.5h-15" />
+                                    </svg>
+                                    Create Album
+                                    </Link>
+                                </div>
+                            </div>
                         </TabPanel>
                     </TabPanels>
                 </TabGroup>
@@ -246,6 +303,7 @@ import TabItem from './settings/Partials/TabItem.vue';
 import PostItem from '@/components/app/PostItem.vue';
 import CreatePost from '@/components/app/CreatePost.vue';
 import type { Post } from '@/types';
+import type { Album } from '@/types';
 
 interface User {
     id: number;
@@ -261,6 +319,8 @@ interface Props {
     errors?: Record<string, string>;
     user: User;
     posts?: Post[];
+    latestAlbums?: Album[];
+    totalAlbumsCount?: number;
 }
 
 const page = usePage();

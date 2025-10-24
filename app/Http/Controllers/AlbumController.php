@@ -28,10 +28,17 @@ class AlbumController extends Controller
     public function index(Request $request, string $username): Response
     {
         $user = User::where('username', $username)->firstOrFail();
+        $search = $request->input('search');
 
-        // Build query based on viewing user permissions
+        // Build query based on viewing user permissions with eager loading
         $query = Album::where('user_id', $user->id)
+            ->with('user')
             ->withCount('photos');
+
+        // Apply search filter
+        if ($search) {
+            $query->where('title', 'like', "%{$search}%");
+        }
 
         // Apply visibility filters
         if (auth()->id() === $user->id) {
@@ -45,9 +52,12 @@ class AlbumController extends Controller
         $albums = $query->paginate(12);
 
         return Inertia::render('Gallery/Index', [
-            'user' => $user,
+            'profileUser' => $user,
             'albums' => AlbumResource::collection($albums),
-            'can_create' => auth()->id() === $user->id,
+            'isOwner' => auth()->id() === $user->id,
+            'filters' => [
+                'search' => $search,
+            ],
         ]);
     }
 

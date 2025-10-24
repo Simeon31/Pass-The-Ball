@@ -33,12 +33,30 @@ class ProfileController extends Controller
             }
         ]);
 
+        // Load latest albums for gallery preview
+        $latestAlbums = $user->albums()
+            ->where(function ($query) {
+                $query->where('visibility', 'public')
+                    ->orWhere('user_id', auth()->id()); // Owner can see all their albums
+            })
+            ->withCount('photos')
+            ->latest()
+            ->limit(6)
+            ->get();
+
         // Transform posts using PostResource
         $posts = \App\Http\Resources\PostResource::collection($user->posts);
 
         return Inertia::render('Profile', [
             'user' => new UserResource($user),
             'posts' => $posts,
+            'latestAlbums' => \App\Http\Resources\AlbumResource::collection($latestAlbums),
+            'totalAlbumsCount' => $user->albums()
+                ->where(function ($query) {
+                    $query->where('visibility', 'public')
+                        ->orWhere('user_id', auth()->id());
+                })
+                ->count(),
         ]);
     }
 
