@@ -17,7 +17,14 @@ class Post extends Model
     protected $fillable = [
         'user_id',
         'group_id',
-        'body'
+        'body',
+        'visibility'
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

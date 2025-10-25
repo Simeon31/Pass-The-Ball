@@ -128,4 +128,40 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(PhotoTag::class);
     }
+
+    /**
+     * Get the users that are following this user.
+     */
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'followers', 'user_id', 'follower_id')
+            ->withPivot('created_at')
+            ->as('follow_data');
+    }
+
+    /**
+     * Get the users that this user is following.
+     */
+    public function following()
+    {
+        return $this->belongsToMany(User::class, 'followers', 'follower_id', 'user_id')
+            ->withPivot('created_at')
+            ->as('follow_data');
+    }
+
+    /**
+     * Check if this user is following another user.
+     */
+    public function isFollowing(User $user): bool
+    {
+        return $this->following()->where('user_id', $user->id)->exists();
+    }
+
+    /**
+     * Check if this user is followed by another user.
+     */
+    public function isFollowedBy(User $user): bool
+    {
+        return $this->followers()->where('follower_id', $user->id)->exists();
+    }
 }

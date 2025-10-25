@@ -115,7 +115,7 @@ const handleDeleteAlbum = () => {
         return;
     }
 
-    router.delete(deleteAlbum.url({ album: props.album.slug }), {
+    router.delete(deleteAlbum.url({ username: props.profileUser.username, album: props.album.slug }), {
         onSuccess: () => {
             // Redirect to gallery index after deletion
             router.get(galleryIndex.url({ username: props.profileUser.username }));
@@ -309,7 +309,7 @@ const openPhoto = (photo: Photo) => {
         </div>
 
         <!-- Modals -->
-        <EditAlbumModal v-model:isOpen="showEditModal" :album="album" />
+        <EditAlbumModal v-model:isOpen="showEditModal" :album="album" :username="profileUser.username" />
         <UploadPhotosModal v-model:isOpen="showUploadModal" :album="album" />
     </AppLayout>
 </template>

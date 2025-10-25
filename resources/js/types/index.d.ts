@@ -36,6 +36,9 @@ export interface User {
     updated_at: string;
     cover_url?: string | null;
     profile_picture_url?: string | null;
+    followers_count?: number;
+    following_count?: number;
+    is_followed_by_auth?: boolean;
 }
 
 export type GroupRole = 'admin' | 'moderator' | 'member';

@@ -37,7 +37,7 @@ class NotificationResource extends JsonResource
             'App\\Notifications\\GroupJoinRejectedNotification' => 'join_rejected',
             'App\\Notifications\\PostCommentNotification' => 'comment',
             'App\\Notifications\\PostReactionNotification' => 'reaction',
-            'App\\Notifications\\UserFollowNotification' => 'follow',
+            'App\\Notifications\\UserFollowedNotification' => 'follow',
         ];
 
         return $typeMap[$this->type] ?? 'general';

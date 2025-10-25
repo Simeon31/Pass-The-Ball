@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AlbumController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\FollowerController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PhotoController;
@@ -54,20 +55,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/gallery/albums', [AlbumController::class, 'store'])
         ->name('gallery.albums.store');
 
-    Route::get('/profile/{username}/gallery/{album:slug}', [AlbumController::class, 'show'])
+    Route::get('/profile/{username}/gallery/{album}', [AlbumController::class, 'show'])
         ->name('gallery.albums.show');
 
-    Route::put('/gallery/albums/{album}', [AlbumController::class, 'update'])
+    Route::put('/profile/{username}/gallery/{album}', [AlbumController::class, 'update'])
         ->name('gallery.albums.update');
 
-    Route::delete('/gallery/albums/{album}', [AlbumController::class, 'destroy'])
+    Route::delete('/profile/{username}/gallery/{album}', [AlbumController::class, 'destroy'])
         ->name('gallery.albums.destroy');
 
     // Photo Management
     Route::post('/gallery/albums/{album}/photos', [PhotoController::class, 'store'])
         ->name('gallery.photos.store');
 
-    Route::get('/profile/{username}/gallery/{album:slug}/{photo:slug}', [PhotoController::class, 'show'])
+    Route::get('/profile/{username}/gallery/{album}/{photo}', [PhotoController::class, 'show'])
         ->name('gallery.photos.show');
 
     Route::put('/gallery/photos/{photo}', [PhotoController::class, 'update'])
@@ -126,6 +127,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
     Route::delete('/notifications/delete-read', [NotificationController::class, 'deleteRead'])->name('notifications.deleteRead');
 });
+
+// Followers
+Route::post('/users/{user}/follow', [FollowerController::class, 'toggle'])
+    ->middleware(['auth', 'verified'])->name('users.follow.toggle');
+
+Route::get('/users/{user}/followers', [FollowerController::class, 'followers'])
+    ->middleware(['auth', 'verified'])->name('users.followers');
+
+Route::get('/users/{user}/following', [FollowerController::class, 'following'])
+    ->middleware(['auth', 'verified'])->name('users.following');
 
 // Groups
 Route::middleware(['auth', 'verified'])->group(function () {

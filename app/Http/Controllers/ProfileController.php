@@ -18,6 +18,9 @@ class ProfileController extends Controller
         // Find user by username
         $user = User::where('username', $username)->firstOrFail();
 
+        // Load follower relationships for counts
+        $user->loadCount(['followers', 'following']);
+
         // Load relationships - only personal posts (not group posts)
         $user->load([
             'posts' => function ($query) {

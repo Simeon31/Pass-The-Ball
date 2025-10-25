@@ -19,6 +19,7 @@ import { ref, watch } from 'vue';
 const props = defineProps<{
     isOpen: boolean;
     album: Album;
+    username: string;
 }>();
 
 const emit = defineEmits<{
@@ -95,9 +96,17 @@ function removeCover() {
 }
 
 function submit() {
-    form.put(updateAlbum.url({ album: props.album.slug }), {
+    const url = updateAlbum.url({ username: props.username, album: props.album.slug });
+    console.log('Update URL:', url);
+    console.log('Username:', props.username);
+    console.log('Album slug:', props.album.slug);
+
+    form.put(url, {
         onSuccess: () => {
             close();
+        },
+        onError: (errors) => {
+            console.error('Update errors:', errors);
         },
     });
 }

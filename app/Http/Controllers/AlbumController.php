@@ -123,7 +123,7 @@ class AlbumController extends Controller
     /**
      * Update the specified album.
      */
-    public function update(UpdateAlbumRequest $request, Album $album)
+    public function update(UpdateAlbumRequest $request, string $username, Album $album)
     {
         $this->authorize('update', $album);
 
@@ -154,13 +154,16 @@ class AlbumController extends Controller
             $album->save();
         }
 
-        return back()->with('status', 'Album updated successfully.');
+        return redirect()->route('gallery.albums.show', [
+            'username' => $username,
+            'album' => $album->slug,
+        ])->with('status', 'Album updated successfully.');
     }
 
     /**
      * Remove the specified album (soft delete).
      */
-    public function destroy(Album $album)
+    public function destroy(string $username, Album $album)
     {
         $this->authorize('delete', $album);
 

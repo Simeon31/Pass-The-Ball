@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Comment, Post, PostAttachment, ReactionType } from '@/types';
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue';
-import { usePage } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import axios from 'axios';
 import { computed, ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { usePostBroadcasting } from '@/composables/usePostBroadcasting';
@@ -163,22 +163,22 @@ defineExpose({
 <template>
     <div class="mb-6 rounded border bg-white p-3 shadow">
         <div class="mb-4 flex items-center gap-4">
-            <a href="javascript:void(0)">
-                <img :src="post.user.profile_picture_url ||
-                    'https://avatar.iran.liara.run/public/'
-                    " alt="User avatar"
-                    class="hover-ring-blue-400 h-12 w-12 rounded-full border border-2 object-cover" />
-            </a>
+            <Link :href="`/profile/${post.user.username}`">
+            <img :src="post.user.profile_picture_url ||
+                'https://avatar.iran.liara.run/public/'
+                " alt="User avatar"
+                class="hover-ring-blue-400 h-12 w-12 rounded-full border border-2 object-cover hover:opacity-80 transition-opacity cursor-pointer" />
+            </Link>
             <div class="flex flex-1 flex-col">
-                <a href="javascript:void(0)" class="hover:underline">
-                    <span class="text-base leading-tight font-bold text-gray-900">{{ post.user.name }}</span>
-                </a>
+                <Link :href="`/profile/${post.user.username}`" class="hover:underline">
+                <span class="text-base leading-tight font-bold text-gray-900">{{ post.user.name }}</span>
+                </Link>
                 <template v-if="post.group">
                     Group: {{ post.group.name }}
                 </template>
                 <span class="mt-1 text-xs text-gray-400">{{
                     post.created_at
-                    }}</span>
+                }}</span>
             </div>
 
             <!-- Post Menu (only shown to post owner) -->

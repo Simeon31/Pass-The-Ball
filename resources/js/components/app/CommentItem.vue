@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Comment, ReactionType } from '@/types';
 import { useCommentBroadcasting } from '@/composables/useCommentBroadcasting';
+import { Link } from '@inertiajs/vue3';
 import axios from 'axios';
 import { ChevronDown, ChevronRight, MessageCircle } from 'lucide-vue-next';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
@@ -266,14 +267,16 @@ const updateReply = async (replyId: number, commentText: string) => {
 <template>
     <div class="group py-2" :class="indentationClass">
         <div class="flex gap-2">
+            <Link :href="`/profile/${comment.user.username}`">
             <img :src="comment.user.profile_picture_url || 'https://avatar.iran.liara.run/public/'" alt="User avatar"
-                class="h-8 w-8 flex-shrink-0 rounded-full border object-cover" />
+                class="h-8 w-8 flex-shrink-0 rounded-full border object-cover hover:opacity-80 transition-opacity cursor-pointer" />
+            </Link>
             <div class="flex-1">
                 <!-- Normal Display Mode -->
                 <div v-if="!isEditing" class="rounded-lg bg-gray-100 px-3 py-2">
-                    <a href="javascript:void(0)" class="text-sm font-semibold hover:underline">
-                        {{ comment.user.name }}
-                    </a>
+                    <Link :href="`/profile/${comment.user.username}`" class="text-sm font-semibold hover:underline">
+                    {{ comment.user.name }}
+                    </Link>
                     <p class="mt-1 whitespace-pre-wrap break-words text-sm text-gray-800">
                         {{ displayedComment }}
                     </p>
@@ -285,9 +288,9 @@ const updateReply = async (replyId: number, commentText: string) => {
 
                 <!-- Edit Mode -->
                 <div v-else class="rounded-lg bg-gray-100 px-3 py-2">
-                    <a href="javascript:void(0)" class="text-sm font-semibold hover:underline">
-                        {{ comment.user.name }}
-                    </a>
+                    <Link :href="`/profile/${comment.user.username}`" class="text-sm font-semibold hover:underline">
+                    {{ comment.user.name }}
+                    </Link>
                     <textarea v-model="editText"
                         class="mt-2 w-full resize-none rounded border border-gray-300 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                         rows="3" @keydown.escape="cancelEdit"></textarea>
