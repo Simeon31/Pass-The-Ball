@@ -1,0 +1,44 @@
+<?php
+
+return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | OpenAI API Key and Organization
+    |--------------------------------------------------------------------------
+    |
+    | Here you may specify your OpenAI API Key and organization. This will be
+    | used to authenticate with the OpenAI API - you can find your API key
+    | and organization on your OpenAI dashboard, at https://openai.com.
+    |
+    */
+
+    'api_key' => env('OPENAI_API_KEY'),
+    'organization' => env('OPENAI_ORGANIZATION'),
+    'project' => env('OPENAI_PROJECT'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Request Timeout
+    |--------------------------------------------------------------------------
+    |
+    | The timeout may be used to specify the maximum number of seconds to wait
+    | for a response. By default, the client will time out after 30 seconds.
+    |
+    */
+
+    'request_timeout' => env('OPENAI_REQUEST_TIMEOUT', 30),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Base URI
+    |--------------------------------------------------------------------------
+    |
+    | You may specify a custom base URI for the OpenAI API. This is useful
+    | if you are using a proxy or custom endpoint.
+    |
+    */
+
+    'base_uri' => env('OPENAI_BASE_URI'),
+
+];

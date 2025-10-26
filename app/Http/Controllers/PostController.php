@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePostRequest;
+use App\Http\Requests\SuggestPostContentRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post;
 use App\Models\PostAttachment;
+use App\Services\OpenAIService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -71,7 +73,6 @@ class PostController extends Controller
                     unlink($filePath);
                 }
 
-                // Delete database record
                 $attachment->delete();
             }
         }
@@ -122,5 +123,30 @@ class PostController extends Controller
         }
 
         return response()->download($filePath, $attachment->name);
+    }
+
+    /**
+     * Suggest enhanced post content using AI.
+     */
+    public function suggestContent(SuggestPostContentRequest $request, OpenAIService $openAIService)
+    {
+        $data = $request->validated();
+
+        $result = $openAIService->enhancePostContent(
+            $data['content'],
+            $data['tone']
+        );
+
+        if ($result['success']) {
+            return response()->json([
+                'success' => true,
+                'enhanced_content' => $result['enhanced_content'],
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'error' => $result['error'],
+        ], 422);
     }
 }

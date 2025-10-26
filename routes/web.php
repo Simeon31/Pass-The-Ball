@@ -88,6 +88,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::post('/post', [PostController::class, 'store'])
     ->middleware(['auth', 'verified'])->name('post.create');
 
+Route::post('/api/post/suggest-content', [PostController::class, 'suggestContent'])
+    ->middleware(['auth', 'verified'])->name('post.suggest-content');
+
 Route::put('/post/{post}', [PostController::class, 'update'])
     ->middleware(['auth', 'verified'])->name('post.update');
 
