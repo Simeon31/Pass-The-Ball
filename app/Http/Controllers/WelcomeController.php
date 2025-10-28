@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\GroupResource;
 use App\Http\Resources\PostResource;
+use App\Http\Resources\UserResource;
 use App\Models\Group;
 use App\Models\Post;
 use Illuminate\Http\Request;
@@ -28,9 +29,18 @@ class WelcomeController extends Controller
             ->take(10) // Limit to 10 groups for sidebar
             ->get();
 
+        // Fetch users that the current user is following
+        $following = $request->user()
+            ->following()
+            ->withPivot('created_at')
+            ->orderByPivot('created_at', 'desc')
+            ->take(10) // Limit to 10 users for sidebar
+            ->get();
+
         return Inertia::render("Welcome", [
             'posts' => PostResource::collection($posts),
             'groups' => GroupResource::collection($groups),
+            'following' => UserResource::collection($following),
         ]);
     }
 

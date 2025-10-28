@@ -5,13 +5,14 @@ import GroupList from '@/components/app/GroupList.vue';
 import PostList from '@/components/app/PostList.vue';
 import { useFlashMessage } from '@/composables/useFlashMessage';
 import AppLayout from '@/layouts/AppLayout.vue';
-import type { PaginatedData, Post, Group } from '@/types';
+import type { PaginatedData, Post, Group, User } from '@/types';
 import { CheckCircleIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 import { Head } from '@inertiajs/vue3';
 
 defineProps<{
     posts: PaginatedData<Post>;
     groups: Group[];
+    following: User[];
 }>();
 
 // Using flash message composable
@@ -38,7 +39,7 @@ const {
             </div>
             <div class="h-full overflow-y-auto lg:order-last lg:col-span-3">
                 <div class="h-[400px] overflow-y-auto">
-                    <FollowingList />
+                    <FollowingList :following="following" />
                 </div>
             </div>
             <div class="flex h-full flex-col overflow-y-auto lg:col-span-6">
