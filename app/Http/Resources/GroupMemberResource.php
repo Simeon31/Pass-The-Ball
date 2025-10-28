@@ -40,7 +40,7 @@ class GroupMemberResource extends JsonResource
         // The resource is a User model with pivot data
         return [
             'id' => $this->id,
-            'user' => new UserResource($this),
+            'user' => new UserResource($this->resource),
             'role' => $this->pivot->role ?? null,
             'status' => $this->pivot->status ?? null,
             'joined_at' => $this->pivot->created_at ?? null,

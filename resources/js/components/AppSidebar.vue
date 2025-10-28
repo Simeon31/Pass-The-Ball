@@ -14,14 +14,20 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Users, Bell } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Users, Bell, Bird, BiohazardIcon, BirdIcon, House } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
+import { EnvelopeIcon } from '@heroicons/vue/24/solid';
 
 const mainNavItems: NavItem[] = [
     {
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'Home',
+        href: '/welcome',
+        icon: House,
     },
     {
         title: 'Groups',
