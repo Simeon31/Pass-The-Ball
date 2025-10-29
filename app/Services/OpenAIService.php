@@ -52,9 +52,12 @@ class OpenAIService
                 . "Do not add hashtags or emojis unless they were in the original. "
                 . "Original content: \"{$content}\"";
 
-            // Call OpenAI API
+            // Get model from config (supports different AI providers)
+            $model = config('openai.model', 'gpt-4o-mini');
+
+            // Call OpenAI API (or compatible provider like Groq)
             $response = $this->client->chat()->create([
-                'model' => 'gpt-4o-mini',
+                'model' => $model,
                 'messages' => [
                     [
                         'role' => 'system',
@@ -89,10 +92,21 @@ class OpenAIService
                 'tone' => $tone,
             ]);
 
+            // Provide specific error messages for common issues
+            $errorMessage = 'Failed to generate suggestion. Please try again.';
+
+            if (str_contains($e->getMessage(), 'rate limit')) {
+                $errorMessage = 'OpenAI rate limit exceeded. Please wait a moment and try again.';
+            } elseif (str_contains($e->getMessage(), 'quota')) {
+                $errorMessage = 'OpenAI quota exceeded. Please check your API credits.';
+            } elseif (str_contains($e->getMessage(), 'authentication') || str_contains($e->getMessage(), 'API key')) {
+                $errorMessage = 'OpenAI API authentication failed. Please check your API key.';
+            }
+
             return [
                 'success' => false,
                 'enhanced_content' => null,
-                'error' => 'Failed to generate suggestion. Please try again.',
+                'error' => $errorMessage,
             ];
         }
     }

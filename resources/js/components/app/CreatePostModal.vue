@@ -40,7 +40,7 @@ const editorKey = ref(0);
 const selectedTone = ref<string>('professional');
 const isLoadingSuggestion = ref(false);
 const aiSuggestion = ref<string | null>(null);
-const showPreviewModal = ref(false);
+const showAIPreview = ref(false);
 const suggestionError = ref<string | null>(null);
 const hasGeneratedSuggestion = ref(false);
 
@@ -74,6 +74,8 @@ watch(
 );
 
 function close() {
+    // Reset composer when actually closing the create post modal
+    resetComposer();
     emit('update:isOpen', false);
 }
 
@@ -93,6 +95,7 @@ function resetComposer() {
 
     // Reset AI suggestion state
     aiSuggestion.value = null;
+    showAIPreview.value = false;
     hasGeneratedSuggestion.value = false;
     suggestionError.value = null;
     selectedTone.value = 'professional';
@@ -110,15 +113,20 @@ async function generateAISuggestion() {
             tone: selectedTone.value,
         });
 
-        if (response.data.success) {
+        if (response.data.success && response.data.enhanced_content) {
             aiSuggestion.value = response.data.enhanced_content;
-            showPreviewModal.value = true;
+            showAIPreview.value = true;
             hasGeneratedSuggestion.value = true;
+        } else {
+            suggestionError.value = 'No enhanced content received. Please try again.';
+            hasGeneratedSuggestion.value = false;
         }
     } catch (error: any) {
         suggestionError.value =
             error.response?.data?.error ||
+            error.response?.data?.message ||
             'Failed to generate suggestion. Please try again.';
+        hasGeneratedSuggestion.value = false;
     } finally {
         isLoadingSuggestion.value = false;
     }
@@ -126,13 +134,20 @@ async function generateAISuggestion() {
 
 function confirmSuggestion() {
     if (aiSuggestion.value) {
+        // Apply the AI suggestion to the editor
         newPostForm.body = aiSuggestion.value;
-        showPreviewModal.value = false;
+        // Hide the preview section
+        showAIPreview.value = false;
+        // Force CKEditor to re-render with the new content
+        editorKey.value++;
+        // Clear the AI suggestion from memory (no longer needed)
+        aiSuggestion.value = null;
     }
 }
 
 function rejectSuggestion() {
-    showPreviewModal.value = false;
+    // Hide preview and allow user to generate again
+    showAIPreview.value = false;
     aiSuggestion.value = null;
     hasGeneratedSuggestion.value = false;
 }
@@ -229,6 +244,47 @@ function submit() {
                                 <CKEditor v-if="isOpen" :key="editorKey" v-model="newPostForm.body"
                                     placeholder="What's on your mind?" :disabled="newPostForm.processing" />
 
+                                <!-- AI Preview Section (Inline) -->
+                                <div v-if="showAIPreview && aiSuggestion"
+                                    class="mt-4 rounded-lg border-2 border-purple-300 bg-purple-50 p-4">
+                                    <div class="mb-3 flex items-center gap-2">
+                                        <SparklesIcon class="h-5 w-5 text-purple-600" />
+                                        <h4 class="font-semibold text-gray-900">AI-Enhanced Content</h4>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="mb-1 block text-xs font-medium text-gray-600">
+                                            Original:
+                                        </label>
+                                        <div class="rounded border border-gray-300 bg-white p-2 text-sm text-gray-700">
+                                            {{ plainTextContent }}
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="mb-1 block text-xs font-medium text-gray-600">
+                                            Enhanced ({{ selectedTone }}):
+                                        </label>
+                                        <div
+                                            class="rounded border border-purple-400 bg-white p-2 text-sm font-medium text-gray-900">
+                                            {{ aiSuggestion }}
+                                        </div>
+                                        <p class="mt-1 text-xs text-gray-500">
+                                            {{ aiSuggestion?.length || 0 }} / 200 characters
+                                        </p>
+                                    </div>
+
+                                    <div class="flex justify-end gap-2">
+                                        <Button type="button" @click="rejectSuggestion" variant="outline" size="sm">
+                                            Reject
+                                        </Button>
+                                        <Button type="button" @click="confirmSuggestion" size="sm"
+                                            class="bg-purple-600 hover:bg-purple-700">
+                                            Use This Content
+                                        </Button>
+                                    </div>
+                                </div>
+
                                 <!-- Attachment Preview -->
                                 <div v-if="previewAttachments.length > 0" class="mt-4">
                                     <AttachmentPreview :attachments="previewAttachments" :show-preview="true"
@@ -307,78 +363,6 @@ function submit() {
                                         </Button>
                                     </div>
                                 </div>
-                            </div>
-                        </DialogPanel>
-                    </TransitionChild>
-                </div>
-            </div>
-        </Dialog>
-    </TransitionRoot>
-
-    <!-- AI Suggestion Preview Modal -->
-    <TransitionRoot :show="showPreviewModal" as="template">
-        <Dialog as="div" class="relative z-[60]" @close="rejectSuggestion">
-            <TransitionChild as="template" enter="duration-300 ease-out" enter-from="opacity-0" enter-to="opacity-100"
-                leave="duration-200 ease-in" leave-from="opacity-100" leave-to="opacity-0">
-                <div class="fixed inset-0 bg-black/40" aria-hidden="true" />
-            </TransitionChild>
-
-            <div class="fixed inset-0 overflow-y-auto">
-                <div class="flex min-h-full items-center justify-center p-4 text-center">
-                    <TransitionChild as="template" enter="duration-300 ease-out" enter-from="opacity-0 scale-95"
-                        enter-to="opacity-100 scale-100" leave="duration-200 ease-in" leave-from="opacity-100 scale-100"
-                        leave-to="opacity-0 scale-95">
-                        <DialogPanel
-                            class="w-full max-w-lg transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                            <!-- Header -->
-                            <div class="mb-4 flex items-center gap-3">
-                                <div class="rounded-full bg-purple-100 p-2">
-                                    <SparklesIcon class="h-6 w-6 text-purple-600" />
-                                </div>
-                                <div>
-                                    <DialogTitle as="h3" class="text-lg font-semibold leading-6 text-gray-900">
-                                        AI-Enhanced Content
-                                    </DialogTitle>
-                                    <p class="text-sm text-gray-500">
-                                        Review the suggested content below
-                                    </p>
-                                </div>
-                            </div>
-
-                            <!-- Content Preview -->
-                            <div class="mt-4">
-                                <div class="mb-3">
-                                    <label class="mb-2 block text-sm font-medium text-gray-700">
-                                        Original Content:
-                                    </label>
-                                    <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-600">
-                                        {{ plainTextContent }}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label class="mb-2 block text-sm font-medium text-gray-700">
-                                        Enhanced Content ({{ selectedTone }}):
-                                    </label>
-                                    <div
-                                        class="rounded-lg border-2 border-purple-200 bg-purple-50 p-3 text-sm text-gray-900">
-                                        {{ aiSuggestion }}
-                                    </div>
-                                    <p class="mt-1 text-xs text-gray-500">
-                                        {{ aiSuggestion?.length || 0 }} / 200 characters
-                                    </p>
-                                </div>
-                            </div>
-
-                            <!-- Footer Actions -->
-                            <div class="mt-6 flex justify-end gap-3">
-                                <Button type="button" @click="rejectSuggestion" variant="outline">
-                                    Reject
-                                </Button>
-                                <Button type="button" @click="confirmSuggestion"
-                                    class="bg-purple-600 hover:bg-purple-700">
-                                    Use This Content
-                                </Button>
                             </div>
                         </DialogPanel>
                     </TransitionChild>
