@@ -28,7 +28,7 @@ A modern social media platform built with Laravel, Inertia.js, Vue 3, and TypeSc
 
 ### Backend
 - **Laravel 12** - PHP framework with elegant syntax
-- **SQLite/MySQL** - Database (SQLite default for easy setup)
+- **MariaDB** - Database (SQLite default for easy setup)
 - **Laravel Fortify** - Authentication scaffolding with 2FA
 - **Laravel Echo** - Real-time event broadcasting
 - **Intervention Image** - Image processing and optimization
@@ -39,7 +39,7 @@ A modern social media platform built with Laravel, Inertia.js, Vue 3, and TypeSc
 - **TypeScript** - Type-safe JavaScript
 - **Inertia.js 2** - Modern monolith approach (no separate API needed)
 - **Tailwind CSS 4** - Utility-first CSS framework
-- **Reka UI** - Radix Vue wrapper components for accessible UI primitives
+- **Reka UI/Headless UI** - Radix Vue wrapper components for accessible UI primitives
 - **CKEditor 5** - Rich text editor with HTML sanitization
 - **Vite 7** - Lightning-fast build tool
 
