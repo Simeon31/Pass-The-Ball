@@ -16,7 +16,7 @@ A modern social media platform built with Laravel, Inertia.js, Vue 3, and TypeSc
 - 👥 **Groups** - Create and manage groups with invitations and join requests
 - 📸 **Photo Gallery** - Upload and manage photos with automatic optimization
 - 🔔 **Real-time Notifications** - Instant notifications via Laravel Echo and Pusher
-- 🤖 **AI Post Enhancement** - AI-powered content improvement using OpenAI or Groq
+- 🤖 **AI Post Enhancement** - AI-powered content improvement using Groq
 - 👤 **User Profiles** - Customizable profiles with avatar support
 - 🔐 **Authentication** - Secure authentication with 2FA support via Laravel Fortify
 - ♾️ **Infinite Scroll** - Smooth infinite scrolling for posts and content
