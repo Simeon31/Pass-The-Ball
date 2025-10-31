@@ -24,11 +24,11 @@ class ProfileImageUpdateTest extends TestCase
         $user = User::factory()->create();
         $file = UploadedFile::fake()->image('avatar.jpg', 400, 400);
 
-        $response = $this->actingAs($user)->post(route('profile.updateCover'), [
+        $response = $this->actingAs($user)->post(route('profile.updateImages'), [
             'avatar' => $file,
         ]);
 
-        $response->assertRedirect(route('profile', ['user' => $user->username]));
+        $response->assertRedirect(route('profile.show', ['username' => $user->username]));
         $response->assertSessionHas('status', 'Profile images updated successfully.');
 
         $user->refresh();
@@ -46,16 +46,16 @@ class ProfileImageUpdateTest extends TestCase
         $user = User::factory()->create();
         $file = UploadedFile::fake()->image('cover.jpg', 1200, 400);
 
-        $response = $this->actingAs($user)->post(route('profile.updateCover'), [
+        $response = $this->actingAs($user)->post(route('profile.updateImages'), [
             'cover' => $file,
         ]);
 
-        $response->assertRedirect(route('profile', ['user' => $user->username]));
+        $response->assertRedirect(route('profile.show', ['username' => $user->username]));
         $response->assertSessionHas('status', 'Profile images updated successfully.');
 
         $user->refresh();
         $this->assertNotNull($user->cover_path);
-        $this->assertStringContainsString('/storage/users/' . $user->id . '/', $user->cover_path);
+        $this->assertStringContainsString('/storage/user/' . $user->id . '/', $user->cover_path);
 
         // Check that file exists in storage
         $path = str_replace('/storage/', '', $user->cover_path);
@@ -69,12 +69,12 @@ class ProfileImageUpdateTest extends TestCase
         $avatar = UploadedFile::fake()->image('avatar.jpg', 400, 400);
         $cover = UploadedFile::fake()->image('cover.jpg', 1200, 400);
 
-        $response = $this->actingAs($user)->post(route('profile.updateCover'), [
+        $response = $this->actingAs($user)->post(route('profile.updateImages'), [
             'avatar' => $avatar,
             'cover' => $cover,
         ]);
 
-        $response->assertRedirect(route('profile', ['user' => $user->username]));
+        $response->assertRedirect(route('profile.show', ['username' => $user->username]));
 
         $user->refresh();
         $this->assertNotNull($user->profile_picture_path);
@@ -97,7 +97,7 @@ class ProfileImageUpdateTest extends TestCase
 
         // Upload first avatar
         $firstAvatar = UploadedFile::fake()->image('first-avatar.jpg', 400, 400);
-        $this->actingAs($user)->post(route('profile.updateCover'), [
+        $this->actingAs($user)->post(route('profile.updateImages'), [
             'avatar' => $firstAvatar,
         ]);
 
@@ -107,7 +107,7 @@ class ProfileImageUpdateTest extends TestCase
 
         // Upload second avatar
         $secondAvatar = UploadedFile::fake()->image('second-avatar.jpg', 400, 400);
-        $this->actingAs($user)->post(route('profile.updateCover'), [
+        $this->actingAs($user)->post(route('profile.updateImages'), [
             'avatar' => $secondAvatar,
         ]);
 
@@ -129,7 +129,7 @@ class ProfileImageUpdateTest extends TestCase
 
         // Upload first cover
         $firstCover = UploadedFile::fake()->image('first-cover.jpg', 1200, 400);
-        $this->actingAs($user)->post(route('profile.updateCover'), [
+        $this->actingAs($user)->post(route('profile.updateImages'), [
             'cover' => $firstCover,
         ]);
 
@@ -139,7 +139,7 @@ class ProfileImageUpdateTest extends TestCase
 
         // Upload second cover
         $secondCover = UploadedFile::fake()->image('second-cover.jpg', 1200, 400);
-        $this->actingAs($user)->post(route('profile.updateCover'), [
+        $this->actingAs($user)->post(route('profile.updateImages'), [
             'cover' => $secondCover,
         ]);
 
@@ -158,7 +158,7 @@ class ProfileImageUpdateTest extends TestCase
         $user = User::factory()->create();
         $file = UploadedFile::fake()->create('document.pdf', 100);
 
-        $response = $this->actingAs($user)->post(route('profile.updateCover'), [
+        $response = $this->actingAs($user)->post(route('profile.updateImages'), [
             'avatar' => $file,
         ]);
 
@@ -171,7 +171,7 @@ class ProfileImageUpdateTest extends TestCase
         $user = User::factory()->create();
         $file = UploadedFile::fake()->create('document.pdf', 100);
 
-        $response = $this->actingAs($user)->post(route('profile.updateCover'), [
+        $response = $this->actingAs($user)->post(route('profile.updateImages'), [
             'cover' => $file,
         ]);
 
@@ -185,7 +185,7 @@ class ProfileImageUpdateTest extends TestCase
         // Create a file larger than 2MB
         $file = UploadedFile::fake()->create('avatar.jpg', 3000);
 
-        $response = $this->actingAs($user)->post(route('profile.updateCover'), [
+        $response = $this->actingAs($user)->post(route('profile.updateImages'), [
             'avatar' => $file,
         ]);
 
@@ -199,7 +199,7 @@ class ProfileImageUpdateTest extends TestCase
         // Create a file larger than 2MB
         $file = UploadedFile::fake()->create('cover.jpg', 3000);
 
-        $response = $this->actingAs($user)->post(route('profile.updateCover'), [
+        $response = $this->actingAs($user)->post(route('profile.updateImages'), [
             'cover' => $file,
         ]);
 
@@ -212,7 +212,7 @@ class ProfileImageUpdateTest extends TestCase
         $user = User::factory()->create();
         $file = UploadedFile::fake()->create('avatar.bmp', 100);
 
-        $response = $this->actingAs($user)->post(route('profile.updateCover'), [
+        $response = $this->actingAs($user)->post(route('profile.updateImages'), [
             'avatar' => $file,
         ]);
 
@@ -225,7 +225,7 @@ class ProfileImageUpdateTest extends TestCase
         $user = User::factory()->create();
         $file = UploadedFile::fake()->create('cover.bmp', 100);
 
-        $response = $this->actingAs($user)->post(route('profile.updateCover'), [
+        $response = $this->actingAs($user)->post(route('profile.updateImages'), [
             'cover' => $file,
         ]);
 
@@ -238,7 +238,7 @@ class ProfileImageUpdateTest extends TestCase
         $user = User::factory()->create();
         $file = UploadedFile::fake()->image('avatar.jpg');
 
-        $response = $this->post(route('profile.updateCover'), [
+        $response = $this->post(route('profile.updateImages'), [
             'avatar' => $file,
         ]);
 
@@ -252,7 +252,7 @@ class ProfileImageUpdateTest extends TestCase
         $anotherUser = User::factory()->create();
         $file = UploadedFile::fake()->image('avatar.jpg');
 
-        $response = $this->actingAs($anotherUser)->post(route('profile.updateCover'), [
+        $response = $this->actingAs($anotherUser)->post(route('profile.updateImages'), [
             'avatar' => $file,
         ]);
 
