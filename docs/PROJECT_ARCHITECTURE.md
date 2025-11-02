@@ -81,31 +81,13 @@
 - **Internal APIs**: Potential REST/GraphQL endpoints for mobile clients; documented via OpenAPI, contract tests enforced.
 - **Admin/Backoffice Tools**: Secure dashboards accessible via feature flags, leveraging same routing stack.
 
-## 12. Documentation & Templates
-- **arc42**: Use chapters for requirements, constraints, context, solution strategy, runtime scenarios, deployment, risks. Map sections above to arc42 structure for comprehensive coverage.
-- **C4 Model**: Maintain system context, container, component, and deployment diagrams. Store source (Mermaid, PlantUML) in version control under `docs/diagrams/`.
-- **Decision Records**: Capture ADRs under `docs/adr/`, referencing the key decisions listed here with status, consequences, and alternatives.
-- **Living Documentation**: Automate updates via CI (lint diagrams, link checks), embed metrics dashboards where relevant.
-
-## 13. Development Methodology & Delivery
-- **Approach**: Agile iterative delivery with two-week sprints, product discovery cadence, and cross-functional squads (backend, frontend, UX, QA, DevOps).
-- **Practices**: Test-driven development for critical flows, trunk-based Git strategy with feature toggles, code reviews via pull requests, continuous integration (GitHub Actions) running linting, Pint, Pest, and frontend unit tests.
-- **DevSecOps**: Security checks (SAST/DAST) integrated into pipeline, dependency vulnerability scans (Composer Audit, npm audit), automated container image hardening.
-- **Release Management**: Automated deployments through blue/green strategy, feature flag rollouts, post-release monitoring, and blameless incident retrospectives.
-- **Collaboration**: Architecture decision records, RFC process for significant changes, documentation sprints to keep knowledge current.
-
-## 14. Architectural Patterns & Principles
+## 12. Architectural Patterns & Principles
 - **Patterns**: Layered architecture, Domain-Driven Design-inspired aggregates, Repository & Adapter patterns at boundaries, CQRS-lite for read-heavy timelines, Event-driven async processing for notifications/media.
 - **Principles**: Separation of concerns, Single Responsibility, Dependency Inversion (services depend on contracts), Security by Design, Modularity with explicit interfaces, Fail-fast error handling, Observability-first mindset.
 - **UI Patterns**: Atomic design in UI components, composition over inheritance, conventional slots/props for extendability.
 - **Integration Patterns**: Idempotent command handling, outbox pattern to prevent lost events, exponential backoff with circuit breakers for third-party calls.
 
-## 15. Visual Modeling & Diagram Toolkit
-- **C4 Suite**: Context, Container, Component, and Deployment diagrams stored in `docs/diagrams/` using Mermaid or PlantUML; versioned alongside code.
-- **Dynamic Views**: Sequence diagrams documenting critical flows (post creation, notification fan-out, media upload pipeline) to highlight async boundaries.
-- **Runtime Scenarios**: State diagrams for moderation workflows, data flow diagrams for analytics extraction, BPMN-lite diagrams for onboarding journey.
-
-## 17. Project Directory Structure (Tree Format)
+## 13. Project Directory Structure (Tree Format)
 ```text
 pass_the_ball/
 ├─ app/              Core Laravel application (console commands, HTTP controllers, domain models)
