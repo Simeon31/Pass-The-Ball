@@ -31,10 +31,250 @@ export interface User {
     name: string;
     username: string;
     email: string;
-    avatar?: string;
     email_verified_at: string | null;
+    created_at: string;
+    updated_at: string;
+    cover_url?: string | null;
+    profile_picture_url?: string | null;
+    followers_count?: number;
+    following_count?: number;
+    is_followed_by_auth?: boolean;
+}
+
+export type GroupRole = 'admin' | 'moderator' | 'member';
+
+export type GroupPermission =
+    | 'post_in_group'
+    | 'invite_members'
+    | 'edit_group_settings'
+    | 'edit_group_images'
+    | 'approve_join_requests'
+    | 'remove_members'
+    | 'moderate_posts'
+    | 'delete_group'
+    | 'change_member_roles';
+
+export interface Group {
+    id: number;
+    name: string;
+    slug: string;
+    about?: string | null;
+    cover_url?: string | null;
+    thumbnail_url?: string | null;
+    auto_approval: boolean;
+    owner?: User;
+    member_count?: number;
+    is_member: boolean;
+    is_owner: boolean;
+    user_role?: GroupRole;
+    permissions?: GroupPermission[];
     created_at: string;
     updated_at: string;
 }
 
+export interface GroupMember {
+    id: number;
+    user: User;
+    role: GroupRole;
+    status: 'pending' | 'approved' | 'rejected';
+    joined_at: string;
+    can_remove?: boolean;
+}
+
+export interface GroupInvitation {
+    id: number;
+    group?: Group;
+    user?: User;
+    inviter?: User;
+    token?: string;
+    status: 'pending' | 'accepted' | 'rejected' | 'expired';
+    is_valid: boolean;
+    is_expired: boolean;
+    expires_at: string;
+    created_at: string;
+}
+
+export type NotificationCategory = 'invitation' | 'join_request' | 'join_approved' | 'join_rejected' | 'comment' | 'reaction' | 'follow' | 'general';
+
+export interface Notification {
+    id: string;
+    type: string;
+    category: NotificationCategory;
+    data: {
+        message?: string;
+        action_url?: string;
+        [key: string]: any;
+    };
+    read_at: string | null;
+    created_at: string;
+    time_ago: string;
+}
+
+export interface NotificationCounts {
+    all: number;
+    unread: number;
+    invitations: number;
+    posts: number;
+    groups: number;
+}
+
+export interface PostAttachment {
+    id: number;
+    name: string;
+    mime_type: string;
+    size: number;
+    url: string;
+    created_at: string;
+}
+
+export type ReactionType = 'like' | 'love' | 'haha' | 'wow' | 'sad' | 'angry';
+
+export interface ReactionSummary {
+    [key: string]: number;
+}
+
+export interface PostReactions {
+    summary: ReactionSummary;
+    total: number;
+    current_user_reaction: ReactionType | null;
+}
+
+export interface Comment {
+    id: number;
+    post_id: number;
+    parent_id: number | null;
+    comment: string;
+    user: User;
+    created_at: string;
+    updated_at: string;
+    reactions: PostReactions;
+    depth: number;
+    can_delete?: boolean;
+    replies?: Comment[];
+    replies_count?: number;
+    has_more_replies?: boolean;
+}
+
+export interface PostComments {
+    data: Comment[];
+    total: number;
+}
+
+export interface Post {
+    id: number;
+    body: string | null;
+    user: User;
+    created_at: string;
+    updated_at: string;
+    group?: Group;
+    attachments: PostAttachment[];
+    reactions: PostReactions;
+    comments: PostComments;
+    can_delete?: boolean;
+}
+
+export interface PaginationLinks {
+    first: string | null;
+    last: string | null;
+    prev: string | null;
+    next: string | null;
+}
+
+export interface PaginationMeta {
+    current_page: number;
+    from: number | null;
+    last_page: number;
+    path: string;
+    per_page: number;
+    to: number | null;
+    total: number;
+}
+
+export interface PaginatedData<T> {
+    data: T[];
+    links: PaginationLinks;
+    meta: PaginationMeta;
+}
+
 export type BreadcrumbItemType = BreadcrumbItem;
+
+// Photo Gallery Types
+
+export type AlbumVisibility = 'public' | 'private' | 'followers_only' | 'link_only';
+
+export interface PhotoMetadata {
+    camera_make?: string;
+    camera_model?: string;
+    lens?: string;
+    focal_length?: string;
+    aperture?: string;
+    shutter_speed?: string;
+    iso?: number;
+    exposure_bias?: string;
+    flash?: string;
+    orientation?: number;
+    taken_at?: string;
+    latitude?: number;
+    longitude?: number;
+    [key: string]: any;
+}
+
+export interface PhotoTag {
+    id: number;
+    name: string;
+    slug: string;
+    photos_count?: number;
+    created_at: string;
+}
+
+export interface Album {
+    id: number;
+    title: string;
+    slug: string;
+    description?: string | null;
+    visibility: AlbumVisibility;
+    cover_url?: string | null;
+    photos_count?: number;
+    user?: User;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Photo {
+    id: number;
+    album_id: number;
+    title?: string | null;
+    slug: string;
+    description?: string | null;
+
+    // Image URLs for different sizes
+    url: string;
+    thumbnail_url: string;
+    medium_url: string;
+    original_url: string;
+
+    // File information
+    mime_type: string;
+    size: number;
+    formatted_size: string;
+
+    // Image dimensions
+    width: number;
+    height: number;
+
+    // Engagement metrics
+    views_count: number;
+    downloads_count: number;
+
+    // EXIF and metadata
+    metadata?: PhotoMetadata | null;
+
+    // Relationships
+    album?: Album;
+    user?: User;
+    tags?: PhotoTag[];
+
+    // Timestamps
+    created_at: string;
+    updated_at: string;
+}

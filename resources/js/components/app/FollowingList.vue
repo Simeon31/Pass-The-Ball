@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import GroupItem from '@/components/app/GroupItem.vue';
-import TextInput from '@/components/TextInput.vue';
-import { ref } from 'vue';
+import type { User } from '@/types';
 import FollowingListItems from './FollowingListItems.vue';
+
+defineProps<{
+    following: User[];
+}>();
 </script>
 
 <template>
-    <div class="px-3 bg-white rounded border py-3">
-        <h2 class="text-xl font-bold">My Followings</h2>
-        <FollowingListItems />
+    <div class="rounded border bg-white px-3 py-3">
+        <h2 class="text-xl font-bold">Following</h2>
+        <FollowingListItems :following="following" />
     </div>
 </template>

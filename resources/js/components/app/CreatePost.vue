@@ -1,52 +1,37 @@
 <script setup lang="ts">
-import Button from '@/components/ui/button/Button.vue';
-import Input from '@/components/ui/input/Input.vue';
-import { ref } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
+import CreatePostModal from './CreatePostModal.vue';
 
-const postCreation = ref(false);
+interface Props {
+    groupId?: number;
+}
 
+const props = defineProps<Props>();
+
+const page = usePage();
+const user = computed(() => page.props.auth.user);
+
+const isModalOpen = ref(false);
+
+function openModal() {
+    isModalOpen.value = true;
+}
 </script>
 
 <template>
-    <div class="p-4 bg-white rounded-lg border mb-3">
-        <div @click="postCreation = true"
-            class="py-3 px-2 text-gray-400 border border-2 rounded-lg border-indigo-900 mb-4">
-            Click here to create a new post
-        </div>
-
-        <div v-if="postCreation" class="flex justify-between items-center w-full gap-4">
-            <div class="relative file-wrapper">
-                <Button type="button" class="relative">
-                    Attach files
-                </Button>
-                <input type="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" multiple
-                    accept="image/*,video/*" />
-            </div>
-
-            <div>
-                <Button type="button" class="relative z-0">
-                    Post
-                </Button>
-            </div>
+    <div class="mb-3 rounded-lg border bg-white p-4">
+        <div class="flex items-center gap-3">
+            <img :src="user.profile_picture_url ||
+                'https://avatar.iran.liara.run/public/'
+                " alt="User avatar" class="h-10 w-10 rounded-full border-2 object-cover" />
+            <button @click="openModal"
+                class="flex-1 rounded-full border border-gray-300 bg-gray-100 px-4 py-2 text-left text-gray-500 transition-colors hover:bg-gray-200">
+                What's on your mind?
+            </button>
         </div>
     </div>
+
+    <!-- Create Post Modal -->
+    <CreatePostModal :is-open="isModalOpen" :group-id="groupId" @update:is-open="isModalOpen = $event" />
 </template>
-
-<style scoped>
-.file-wrapper button {
-    transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease;
-}
-
-.file-wrapper:hover button,
-.file-wrapper:focus-within button {
-    transform: translateY(-2px);
-    filter: brightness(0.95);
-    box-shadow: 0 6px 18px rgba(16, 24, 40, 0.08);
-}
-
-.file-wrapper:active button {
-    transform: translateY(0);
-    filter: brightness(0.9);
-    box-shadow: none;
-}
-</style>

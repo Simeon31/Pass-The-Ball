@@ -26,6 +26,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'username',
         'email',
         'password',
+        'cover_path',
+        'profile_picture_path',
     ];
 
     /**
@@ -57,5 +59,109 @@ class User extends Authenticatable implements MustVerifyEmail
             ->generateSlugsFrom('name')
             ->saveSlugsTo('username')
             ->doNotGenerateSlugsOnUpdate();
+    }
+
+    /**
+     * Get the posts for the user.
+     */
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    /**
+     * Get the groups owned by the user.
+     */
+    public function ownedGroups()
+    {
+        return $this->hasMany(Group::class);
+    }
+
+    /**
+     * Get the groups that the user is a member of.
+     */
+    public function groups()
+    {
+        return $this->belongsToMany(Group::class, 'group_users')
+            ->withPivot(['status', 'role', 'created_at'])
+            ->wherePivot('status', 'approved');
+    }
+
+    /**
+     * Get pending group join requests for the user.
+     */
+    public function pendingGroupRequests()
+    {
+        return $this->belongsToMany(Group::class, 'group_users')
+            ->withPivot(['status', 'role', 'created_at'])
+            ->wherePivot('status', 'pending');
+    }
+
+    /**
+     * Get group invitations for the user.
+     */
+    public function groupInvitations()
+    {
+        return $this->hasMany(GroupInvitation::class);
+    }
+
+    /**
+     * Get the albums owned by the user.
+     */
+    public function albums()
+    {
+        return $this->hasMany(Album::class);
+    }
+
+    /**
+     * Get the photos uploaded by the user.
+     */
+    public function photos()
+    {
+        return $this->hasMany(Photo::class);
+    }
+
+    /**
+     * Get the photo tags created by the user.
+     */
+    public function photoTags()
+    {
+        return $this->hasMany(PhotoTag::class);
+    }
+
+    /**
+     * Get the users that are following this user.
+     */
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'followers', 'user_id', 'follower_id')
+            ->withPivot('created_at')
+            ->as('follow_data');
+    }
+
+    /**
+     * Get the users that this user is following.
+     */
+    public function following()
+    {
+        return $this->belongsToMany(User::class, 'followers', 'follower_id', 'user_id')
+            ->withPivot('created_at')
+            ->as('follow_data');
+    }
+
+    /**
+     * Check if this user is following another user.
+     */
+    public function isFollowing(User $user): bool
+    {
+        return $this->following()->where('user_id', $user->id)->exists();
+    }
+
+    /**
+     * Check if this user is followed by another user.
+     */
+    public function isFollowedBy(User $user): bool
+    {
+        return $this->followers()->where('follower_id', $user->id)->exists();
     }
 }

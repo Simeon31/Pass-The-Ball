@@ -39,7 +39,7 @@ const user = page.props.auth.user;
         <Head title="Profile settings" />
 
         <SettingsLayout>
-            <div class="flex flex-col space-y-6">
+            <div class="flex flex-col space-y-8">
                 <HeadingSmall title="Profile information" description="Update your name and email address" />
 
                 <Form v-bind="ProfileController.update.form()" class="space-y-6"

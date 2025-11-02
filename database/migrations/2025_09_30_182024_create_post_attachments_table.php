@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -16,7 +15,8 @@ return new class extends Migration
             $table->foreignId('post_id')->constrained('posts');
             $table->string('name');
             $table->string('file_path', 255);
-            $table->string('mime_type', 20);
+            $table->string('mime_type', 50);
+            $table->integer('size')->nullable();
             $table->foreignId(column: 'created_by')->constrained('users');
             $table->timestamp('created_at')->nullable();
         });
