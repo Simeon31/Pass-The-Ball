@@ -4,7 +4,7 @@
 - **Location:** Targeted unit specs live in `tests/Unit`; shared factories and helpers stay in `tests/Pest.php`.
 - **Execution:** Run `php artisan test --testsuite=Unit` (or `vendor\bin\pest --group=unit` on Windows) to execute only unit coverage.
 - **Purpose:** Each unit test isolates a single class or pure function, mocking external services and database calls to keep feedback fast.
-- **Conventions:** Name files with the subject under test (e.g., `UserServiceTest.php`), group related expectations with Pest `describe` blocks, and prefer Laravel helpers for fakes over manual stubs.
+- **Conventions:** Files are named with the subject under test (e.g., `UserServiceTest.php`).
 
 **Example – ImageOptimizationServiceTest:** The suite boots with `Storage::fake('public')`, uploads a synthetic JPEG, and pushes it through `processPhoto`. Assertions confirm the response exposes paths for each generated size, metadata, and basic dimensions, then verifies the fake disk actually holds those files. Follow-up expectations run `deletePhoto` against the returned paths to prove every variant is removed, demonstrating how the service keeps storage tidy without touching the real filesystem.
 
